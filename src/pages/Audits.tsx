@@ -1,0 +1,252 @@
+import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ClipboardCheck, Plus, Search, FileText, Eye, ArrowUpDown } from 'lucide-react';
+
+interface Audit {
+  id: string;
+  name: string;
+  company: string;
+  companyId: string;
+  date: string;
+  status: 'In Progress' | 'Completed' | 'Planned';
+  completion: number;
+  expert: string;
+}
+
+const Audits: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const companyIdFilter = searchParams.get('companyId');
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // Mock data
+  const mockAudits: Audit[] = [
+    {
+      id: '1',
+      name: 'Annual IT Infrastructure Audit',
+      company: 'Acme Inc.',
+      companyId: '1',
+      date: '2025-02-15',
+      status: 'In Progress',
+      completion: 65,
+      expert: 'John Expert'
+    },
+    {
+      id: '2',
+      name: 'Security Compliance Audit',
+      company: 'TechCorp',
+      companyId: '2',
+      date: '2025-02-10',
+      status: 'In Progress',
+      completion: 30,
+      expert: 'John Expert'
+    },
+    {
+      id: '3',
+      name: 'Data Protection Assessment',
+      company: 'Global Systems',
+      companyId: '3',
+      date: '2025-01-28',
+      status: 'Completed',
+      completion: 100,
+      expert: 'Sarah Expert'
+    },
+    {
+      id: '4',
+      name: 'Network Security Audit',
+      company: 'Innovate Solutions',
+      companyId: '4',
+      date: '2025-01-15',
+      status: 'Completed',
+      completion: 100,
+      expert: 'John Expert'
+    },
+    {
+      id: '5',
+      name: 'Cloud Infrastructure Review',
+      company: 'DataTech',
+      companyId: '5',
+      date: '2025-03-10',
+      status: 'Planned',
+      completion: 0,
+      expert: 'Sarah Expert'
+    }
+  ];
+
+  const filteredAudits = mockAudits
+    .filter(audit => 
+      (companyIdFilter ? audit.companyId === companyIdFilter : true) &&
+      (audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       audit.company.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (statusFilter === 'all' || audit.status === statusFilter)
+    );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Audits</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {companyIdFilter 
+              ? 'Audits for the selected company' 
+              : 'Manage and view all IT audits'}
+          </p>
+        </div>
+        <Link
+          to="/audits/new"
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Audit
+        </Link>
+      </div>
+
+      {/* Search and filters */}
+      <div className="bg-white shadow rounded-lg p-4">
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
+          <div className="relative flex-grow mb-4 md:mb-0">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+              placeholder="Search audits..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex space-x-4">
+            <select
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Planned">Planned</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Audits list */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="flex items-center">
+                    Audit Name
+                    <ArrowUpDown className="h-4 w-4 ml-1" />
+                  </div>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="flex items-center">
+                    Company
+                    <ArrowUpDown className="h-4 w-4 ml-1" />
+                  </div>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="flex items-center">
+                    Date
+                    <ArrowUpDown className="h-4 w-4 ml-1" />
+                  </div>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Completion
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Expert
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredAudits.map((audit) => (
+                <tr key={audit.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <ClipboardCheck className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          <Link to={`/audits/${audit.id}`} className="hover:text-indigo-600">
+                            {audit.name}
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      <Link to={`/companies/${audit.companyId}`} className="hover:text-indigo-600">
+                        {audit.company}
+                      </Link>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {audit.date}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      audit.status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                      audit.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {audit.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className={`h-2.5 rounded-full ${
+                          audit.status === 'Completed' ? 'bg-green-500' : 
+                          audit.status === 'In Progress' ? 'bg-yellow-500' :
+                          'bg-blue-500'
+                        }`} 
+                        style={{ width: `${audit.completion}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-gray-500 mt-1">{audit.completion}%</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {audit.expert}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-3">
+                      <Link to={`/audits/${audit.id}`} className="text-indigo-600 hover:text-indigo-900">
+                        <Eye className="h-5 w-5" />
+                      </Link>
+                      {audit.status === 'Completed' && (
+                        <Link to={`/reports/${audit.id}`} className="text-green-600 hover:text-green-900">
+                          <FileText className="h-5 w-5" />
+                        </Link>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filteredAudits.length === 0 && (
+          <div className="px-6 py-4 text-center text-gray-500">
+            No audits found matching your search criteria.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Audits;
