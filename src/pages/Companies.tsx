@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Building2, Plus, Search, Edit, Trash2, ArrowUpDown } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
 
 interface Company {
   id: string;
@@ -15,6 +16,10 @@ interface Company {
 
 const Companies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<keyof Company>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const { user } = useUser();
+  const isAdmin = user?.role === 'admin';
   
   // Mock data
   const mockCompanies: Company[] = [
@@ -36,7 +41,7 @@ const Companies: React.FC = () => {
       location: 'San Francisco, USA',
       contactPerson: 'Jane Doe',
       email: 'jane@techcorp.com',
-      lastAudit: '2025-02-10'
+      lastAudit: '2025-02-20'
     },
     {
       id: '3',
@@ -44,37 +49,43 @@ const Companies: React.FC = () => {
       industry: 'IT Services',
       size: 'Large',
       location: 'London, UK',
-      contactPerson: 'Robert Johnson',
-      email: 'robert@globalsystems.com',
-      lastAudit: '2025-01-28'
-    },
-    {
-      id: '4',
-      name: 'Innovate Solutions',
-      industry: 'Software',
-      size: 'Small',
-      location: 'Berlin, Germany',
-      contactPerson: 'Anna Schmidt',
-      email: 'anna@innovate.com',
-      lastAudit: '2025-01-05'
-    },
-    {
-      id: '5',
-      name: 'DataTech',
-      industry: 'Data Analytics',
-      size: 'Medium',
-      location: 'Toronto, Canada',
-      contactPerson: 'Michael Brown',
-      email: 'michael@datatech.com',
-      lastAudit: null
+      contactPerson: 'Mike Johnson',
+      email: 'mike@globalsys.com',
+      lastAudit: '2025-03-10'
     }
   ];
 
-  const filteredCompanies = mockCompanies.filter(company => 
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSort = (field: keyof Company) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedAndFilteredCompanies = mockCompanies
+    .filter(company => 
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.location.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (aValue === null && bValue === null) return 0;
+      if (aValue === null) return sortDirection === 'asc' ? 1 : -1;
+      if (bValue === null) return sortDirection === 'asc' ? -1 : 1;
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      return 0;
+    });
 
   return (
     <div className="space-y-6">
@@ -85,13 +96,15 @@ const Companies: React.FC = () => {
             Manage companies for IT audits
           </p>
         </div>
-        <Link
-          to="/companies/new"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Company
-        </Link>
+        {isAdmin && (
+          <Link
+            to="/companies/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Company
+          </Link>
+        )}
       </div>
 
       {/* Search and filters */}
@@ -119,27 +132,59 @@ const Companies: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Company
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('name')}
+                  >
+                    <span>Company</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Industry
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('industry')}
+                  >
+                    <span>Industry</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'industry' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Size
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('size')}
+                  >
+                    <span>Size</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'size' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('location')}
+                  >
+                    <span>Location</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'location' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Audit
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('lastAudit')}
+                  >
+                    <span>Last Audit</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'lastAudit' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                {isAdmin && (
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCompanies.map((company) => (
+              {sortedAndFilteredCompanies.map((company) => (
                 <tr key={company.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -170,33 +215,35 @@ const Companies: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {company.lastAudit ? company.lastAudit : 'No audits yet'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <Link
-                        to={`/companies/${company.id}/edit`}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </Link>
-                      <button
-                        className="text-red-600 hover:text-red-900"
-                        onClick={() => {
-                          if (window.confirm('Are you sure you want to delete this company?')) {
-                            // Delete company logic would go here
-                            console.log('Delete company:', company.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
+                  {isAdmin && (
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/companies/${company.id}/edit`}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          <Edit className="h-5 w-5" />
+                        </Link>
+                        <button
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this company?')) {
+                              // Delete company logic would go here
+                              console.log('Delete company:', company.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {filteredCompanies.length === 0 && (
+        {sortedAndFilteredCompanies.length === 0 && (
           <div className="px-6 py-4 text-center text-gray-500">
             No companies found matching your search criteria.
           </div>

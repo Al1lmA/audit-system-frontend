@@ -9,6 +9,7 @@ interface RegisterFormData {
   password: string;
   confirmPassword: string;
   role: 'expert' | 'participant';
+  organization?: string;
 }
 
 const Register: React.FC = () => {
@@ -16,6 +17,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>();
   const password = watch('password');
+  const role = watch('role');
 
   const onSubmit = (data: RegisterFormData) => {
     // In a real app, this would be an API call to register the user
@@ -153,6 +155,25 @@ const Register: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.role.message}</p>
               )}
             </div>
+            {role === 'participant' && (
+              <div className="mb-4">
+                <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
+                  Organization
+                </label>
+                <input
+                  id="organization"
+                  type="text"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Enter your organization name"
+                  {...register('organization', { 
+                    required: role === 'participant' ? 'Organization is required for participants' : false
+                  })}
+                />
+                {errors.organization && (
+                  <p className="text-red-500 text-xs mt-1">{errors.organization.message}</p>
+                )}
+              </div>
+            )}
           </div>
 
           {error && (

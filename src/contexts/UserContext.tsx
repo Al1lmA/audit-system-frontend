@@ -5,6 +5,7 @@ interface User {
   name: string;
   email: string;
   role: 'expert' | 'participant' | 'admin';
+  organization?: string;
 }
 
 interface UserContextType {

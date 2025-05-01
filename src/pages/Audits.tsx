@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ClipboardCheck, Plus, Search, FileText, Eye, ArrowUpDown } from 'lucide-react';
+import { ClipboardCheck, Plus, Search, FileText, Eye, ArrowUpDown, Calendar } from 'lucide-react';
 
 interface Audit {
   id: string;
@@ -19,6 +19,12 @@ const Audits: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
+    from: '',
+    to: ''
+  });
+  const [sortField, setSortField] = useState<keyof Audit>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
   // Mock data
   const mockAudits: Audit[] = [
@@ -74,13 +80,36 @@ const Audits: React.FC = () => {
     }
   ];
 
+  const handleSort = (field: keyof Audit) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
   const filteredAudits = mockAudits
     .filter(audit => 
       (companyIdFilter ? audit.companyId === companyIdFilter : true) &&
       (audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
        audit.company.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (statusFilter === 'all' || audit.status === statusFilter)
-    );
+      (statusFilter === 'all' || audit.status === statusFilter) &&
+      (!dateRange.from || audit.date >= dateRange.from) &&
+      (!dateRange.to || audit.date <= dateRange.to)
+    )
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      return 0;
+    });
 
   return (
     <div className="space-y-6">
@@ -104,8 +133,8 @@ const Audits: React.FC = () => {
 
       {/* Search and filters */}
       <div className="bg-white shadow rounded-lg p-4">
-        <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
-          <div className="relative flex-grow mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+          <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
@@ -129,6 +158,22 @@ const Audits: React.FC = () => {
               <option value="Planned">Planned</option>
             </select>
           </div>
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-5 w-5 text-gray-400" />
+            <input
+              type="date"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              value={dateRange.from}
+              onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+            />
+            <span className="text-gray-500">to</span>
+            <input
+              type="date"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              value={dateRange.to}
+              onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+            />
+          </div>
         </div>
       </div>
 
@@ -139,31 +184,52 @@ const Audits: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center">
-                    Audit Name
-                    <ArrowUpDown className="h-4 w-4 ml-1" />
-                  </div>
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('name')}
+                  >
+                    <span>Audit Name</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center">
-                    Company
-                    <ArrowUpDown className="h-4 w-4 ml-1" />
-                  </div>
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('company')}
+                  >
+                    <span>Company</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'company' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center">
-                    Date
-                    <ArrowUpDown className="h-4 w-4 ml-1" />
-                  </div>
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('date')}
+                  >
+                    <span>Date</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'date' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('status')}
+                  >
+                    <span>Status</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'status' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Completion
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Expert
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                    onClick={() => handleSort('expert')}
+                  >
+                    <span>Expert</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'expert' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
