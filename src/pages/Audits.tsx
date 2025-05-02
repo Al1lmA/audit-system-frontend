@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
 import { ClipboardCheck, Plus, Search, FileText, Eye, ArrowUpDown, Calendar } from 'lucide-react';
 
 interface Audit {
@@ -16,6 +17,8 @@ interface Audit {
 const Audits: React.FC = () => {
   const [searchParams] = useSearchParams();
   const companyIdFilter = searchParams.get('companyId');
+  const { user } = useUser();
+  const canCreateAudit = user?.role === 'expert' || user?.role === 'admin';
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -115,20 +118,22 @@ const Audits: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Audits</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Audits</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {companyIdFilter 
               ? 'Audits for the selected company' 
               : 'Manage and view all IT audits'}
           </p>
         </div>
-        <Link
-          to="/audits/new"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Audit
-        </Link>
+        {canCreateAudit && (
+          <Link
+            to="/audits/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Audit
+          </Link>
+        )}
       </div>
 
       {/* Search and filters */}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider } from './contexts/UserContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -11,33 +12,37 @@ import AuditDetails from './pages/AuditDetails';
 import Analytics from './pages/Analytics';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
+import Users from './pages/Users';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import './index.css';
 
 function App() {
   return (
-    <UserProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
-          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/companies/:id" element={<CompanyDetails />} />
-            <Route path="/audits" element={<Audits />} />
-            <Route path="/audits/:id" element={<AuditDetails />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/profile" element={<Profile />} />
-          </Route>
-        </Routes>
-      </Router>
-    </UserProvider>
+    <ThemeProvider>
+      <UserProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            
+            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/companies/:id" element={<CompanyDetails />} />
+              <Route path="/audits" element={<Audits />} />
+              <Route path="/audits/:id" element={<AuditDetails />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/users" element={<Users />} />
+            </Route>
+          </Routes>
+        </Router>
+      </UserProvider>
+    </ThemeProvider>
   );
 }
 
-export default App;
+export default App
