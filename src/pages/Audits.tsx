@@ -137,7 +137,7 @@ const Audits: React.FC = () => {
       </div>
 
       {/* Search and filters */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -145,7 +145,7 @@ const Audits: React.FC = () => {
             </div>
             <input
               type="text"
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               placeholder="Search audits..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -153,7 +153,7 @@ const Audits: React.FC = () => {
           </div>
           <div className="flex space-x-4">
             <select
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -167,14 +167,14 @@ const Audits: React.FC = () => {
             <Calendar className="h-5 w-5 text-gray-400" />
             <input
               type="date"
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
               value={dateRange.from}
               onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
             />
-            <span className="text-gray-500">to</span>
+            <span className="text-gray-500 dark:text-gray-400">to</span>
             <input
               type="date"
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
               value={dateRange.to}
               onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
             />
@@ -183,75 +183,75 @@ const Audits: React.FC = () => {
       </div>
 
       {/* Audits list */}
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button 
-                    className="flex items-center space-x-1 hover:text-gray-700"
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('name')}
                   >
                     <span>Audit Name</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button 
-                    className="flex items-center space-x-1 hover:text-gray-700"
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('company')}
                   >
                     <span>Company</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'company' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button 
-                    className="flex items-center space-x-1 hover:text-gray-700"
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('date')}
                   >
                     <span>Date</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'date' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button 
-                    className="flex items-center space-x-1 hover:text-gray-700"
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('status')}
                   >
                     <span>Status</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'status' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Completion
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button 
-                    className="flex items-center space-x-1 hover:text-gray-700"
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('expert')}
                   >
                     <span>Expert</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'expert' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAudits.map((audit) => (
-                <tr key={audit.id} className="hover:bg-gray-50">
+                <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <ClipboardCheck className="h-4 w-4 text-indigo-600" />
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                        <ClipboardCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          <Link to={`/audits/${audit.id}`} className="hover:text-indigo-600">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <Link to={`/audits/${audit.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
                             {audit.name}
                           </Link>
                         </div>
@@ -259,47 +259,47 @@ const Audits: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      <Link to={`/companies/${audit.companyId}`} className="hover:text-indigo-600">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      <Link to={`/companies/${audit.companyId}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
                         {audit.company}
                       </Link>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {audit.date}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      audit.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                      audit.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
+                      audit.status === 'Completed' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
+                      audit.status === 'In Progress' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
+                      'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                     }`}>
                       {audit.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                       <div 
                         className={`h-2.5 rounded-full ${
-                          audit.status === 'Completed' ? 'bg-green-500' : 
-                          audit.status === 'In Progress' ? 'bg-yellow-500' :
-                          'bg-blue-500'
+                          audit.status === 'Completed' ? 'bg-green-500 dark:bg-green-600' : 
+                          audit.status === 'In Progress' ? 'bg-yellow-500 dark:bg-yellow-600' :
+                          'bg-blue-500 dark:bg-blue-600'
                         }`} 
                         style={{ width: `${audit.completion}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs text-gray-500 mt-1">{audit.completion}%</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audit.completion}%</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {audit.expert}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-3">
-                      <Link to={`/audits/${audit.id}`} className="text-indigo-600 hover:text-indigo-900">
+                      <Link to={`/audits/${audit.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                         <Eye className="h-5 w-5" />
                       </Link>
                       {audit.status === 'Completed' && (
-                        <Link to={`/reports/${audit.id}`} className="text-green-600 hover:text-green-900">
+                        <Link to={`/reports/${audit.id}`} className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">
                           <FileText className="h-5 w-5" />
                         </Link>
                       )}
@@ -311,7 +311,7 @@ const Audits: React.FC = () => {
           </table>
         </div>
         {filteredAudits.length === 0 && (
-          <div className="px-6 py-4 text-center text-gray-500">
+          <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
             No audits found matching your search criteria.
           </div>
         )}
