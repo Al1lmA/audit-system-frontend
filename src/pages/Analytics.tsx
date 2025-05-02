@@ -111,8 +111,8 @@ const Analytics: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Analytics</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {selectedTarget 
               ? `Analytics for ${selectedTarget.name}`
               : 'Select a company or audit to view analytics'}
@@ -121,14 +121,14 @@ const Analytics: React.FC = () => {
         <div className="flex space-x-4">
           <button
             onClick={() => setShowFilterSelector(true)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             <Filter className="h-4 w-4 mr-2" />
             {selectedTarget ? selectedTarget.name : 'Select Target'}
           </button>
           {selectedTarget && (
             <select
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
             >
@@ -144,8 +144,8 @@ const Analytics: React.FC = () => {
       {/* Filter Selector Modal */}
       {showFilterSelector && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Select Analytics Target</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Select Analytics Target</h2>
             
             <div className="mb-4">
               <div className="relative">
@@ -154,7 +154,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Search companies or audits..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -164,39 +164,39 @@ const Analytics: React.FC = () => {
             
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Companies</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Companies</h3>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {filteredCompanies.map((company) => (
                     <button
                       key={company.id}
                       onClick={() => handleTargetSelect({ type: 'company', ...company })}
-                      className="w-full flex items-center p-2 rounded-md hover:bg-gray-50 text-left"
+                      className="w-full flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-left text-gray-900 dark:text-white"
                     >
-                      <Building2 className="w-5 h-5 text-gray-400 mr-2" />
+                      <Building2 className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
                       {company.name}
                     </button>
                   ))}
                   {filteredCompanies.length === 0 && (
-                    <p className="text-sm text-gray-500 p-2">No companies found</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 p-2">No companies found</p>
                   )}
                 </div>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Specific Audits</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Specific Audits</h3>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {filteredAudits.map((audit) => (
                     <button
                       key={audit.id}
                       onClick={() => handleTargetSelect({ type: 'audit', ...audit })}
-                      className="w-full flex items-center p-2 rounded-md hover:bg-gray-50 text-left"
+                      className="w-full flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-left text-gray-900 dark:text-white"
                     >
-                      <ClipboardCheck className="w-5 h-5 text-gray-400 mr-2" />
+                      <ClipboardCheck className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
                       {audit.name}
                     </button>
                   ))}
                   {filteredAudits.length === 0 && (
-                    <p className="text-sm text-gray-500 p-2">No audits found</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 p-2">No audits found</p>
                   )}
                 </div>
               </div>
@@ -208,7 +208,7 @@ const Analytics: React.FC = () => {
                   setShowFilterSelector(false);
                   setSearchTerm('');
                 }}
-                className="text-sm text-gray-600 hover:text-gray-900"
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Cancel
               </button>
@@ -218,15 +218,15 @@ const Analytics: React.FC = () => {
       )}
 
       {!selectedTarget ? (
-        <div className="bg-white shadow rounded-lg p-6 text-center">
-          <Filter className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-lg font-medium text-gray-900 mb-2">Select a Target for Analysis</h2>
-          <p className="text-gray-500">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center">
+          <Filter className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Select a Target for Analysis</h2>
+          <p className="text-gray-500 dark:text-gray-400">
             Choose a specific company or audit to view detailed analytics and insights.
           </p>
           <button
             onClick={() => setShowFilterSelector(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           >
             Select Target
           </button>
@@ -234,17 +234,17 @@ const Analytics: React.FC = () => {
       ) : (
         <>
           {/* Compliance by Category */}
-          <div className="bg-white shadow rounded-lg">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
               <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Compliance by Category</h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Compliance by Category</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                   Breakdown of compliance status across different audit categories
                 </p>
               </div>
               {selectedTarget.type === 'company' && (
                 <select
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
@@ -257,7 +257,7 @@ const Analytics: React.FC = () => {
                 </select>
               )}
             </div>
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -269,10 +269,17 @@ const Analytics: React.FC = () => {
                       bottom: 5,
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="name" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        color: '#F3F4F6'
+                      }}
+                    />
                     <Legend />
                     <Bar dataKey="compliant" stackId="a" fill="#4ade80" name="Compliant" />
                     <Bar dataKey="partial" stackId="a" fill="#facc15" name="Partial" />
@@ -284,14 +291,14 @@ const Analytics: React.FC = () => {
           </div>
 
           {/* Compliance Trend */}
-          <div className="bg-white shadow rounded-lg">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Compliance Score Trend</h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Compliance Score Trend</h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                 Overall compliance score trend over time
               </p>
             </div>
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
@@ -303,10 +310,17 @@ const Analytics: React.FC = () => {
                       bottom: 5,
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="month" stroke="#9CA3AF" />
+                    <YAxis domain={[0, 100]} stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        color: '#F3F4F6'
+                      }}
+                    />
                     <Legend />
                     <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} name="Compliance Score" />
                   </LineChart>
@@ -318,14 +332,14 @@ const Analytics: React.FC = () => {
           {/* Two-column layout for smaller charts */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Issues by Category */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
               <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Issues by Category</h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Issues by Category</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                   Distribution of non-compliant findings
                 </p>
               </div>
-              <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+              <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -343,7 +357,14 @@ const Analytics: React.FC = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#1F2937',
+                          border: 'none',
+                          borderRadius: '0.375rem',
+                          color: '#F3F4F6'
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -351,33 +372,33 @@ const Analytics: React.FC = () => {
             </div>
 
             {/* Top Recommendations */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
               <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Top Recommendations</h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Top Recommendations</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                   Most frequent improvement recommendations
                 </p>
               </div>
-              <div className="border-t border-gray-200">
-                <ul className="divide-y divide-gray-200">
+              <div className="border-t border-gray-200 dark:border-gray-700">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {topRecommendations.map((recommendation) => (
                     <li key={recommendation.id} className="px-4 py-4 sm:px-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="flex-shrink-0">
-                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100">
-                              <span className="text-sm font-medium leading-none text-indigo-800">
+                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900">
+                              <span className="text-sm font-medium leading-none text-indigo-800 dark:text-indigo-200">
                                 {recommendation.id}
                               </span>
                             </span>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{recommendation.recommendation}</div>
-                            <div className="text-sm text-gray-500">{recommendation.category}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{recommendation.recommendation}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{recommendation.category}</div>
                           </div>
                         </div>
                         <div className="ml-2 flex-shrink-0 flex">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                             {recommendation.frequency} occurrences
                           </span>
                         </div>
@@ -390,27 +411,27 @@ const Analytics: React.FC = () => {
           </div>
 
           {/* AI Insights */}
-          <div className="bg-white shadow rounded-lg">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">AI-Generated Insights</h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">AI-Generated Insights</h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                 Intelligent analysis of audit data patterns
               </p>
             </div>
-            <div className="border-t border-gray-200">
-              <ul className="divide-y divide-gray-200">
+            <div className="border-t border-gray-200 dark:border-gray-700">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {aiInsights.map((insight) => (
                   <li key={insight.id} className="px-4 py-4 sm:px-6">
                     <div className="flex items-start">
                       <div className="flex-shrink-0">
-                        <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                          <svg className="h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                          <svg className="h-5 w-5 text-purple-600 dark:text-purple-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
                         </div>
                       </div>
                       <div className="ml-4">
-                        <p className="text-sm text-gray-900">{insight.insight}</p>
+                        <p className="text-sm text-gray-900 dark:text-white">{insight.insight}</p>
                       </div>
                     </div>
                   </li>
