@@ -75,6 +75,19 @@ const CreateAudit: React.FC = () => {
       }
     }
   });
+  
+  // В начале компонента, после импортов
+  useEffect(() => {
+    // При монтировании компонента
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    
+    // При размонтировании компонента возвращаем прокрутку
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   // Handle outside clicks to close dropdowns
   useEffect(() => {
