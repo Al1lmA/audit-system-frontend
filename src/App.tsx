@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Companies from './pages/Companies';
 import CompanyDetails from './pages/CompanyDetails';
 import Audits from './pages/Audits';
+import CreateAudit from './pages/CreateAudit';
 import AuditDetails from './pages/AuditDetails';
 import Analytics from './pages/Analytics';
 import Reports from './pages/Reports';
@@ -32,6 +33,7 @@ function App() {
               <Route path="/companies" element={<Companies />} />
               <Route path="/companies/:id" element={<CompanyDetails />} />
               <Route path="/audits" element={<Audits />} />
+              <Route path="/audits/new" element={<CreateAudit />} />
               <Route path="/audits/:id" element={<AuditDetails />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/reports" element={<Reports />} />
@@ -45,4 +47,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
