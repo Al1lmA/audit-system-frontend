@@ -57,7 +57,7 @@ const AuditDetails: React.FC = () => {
     companyId: '1',
     date: '2025-02-15',
     dueDate: '2025-03-15',
-    status: 'Planned', // Changed to 'Planned' for demonstration
+    status: 'Planned',
     completion: 0,
     expert: 'John Expert',
     participant: {
@@ -207,9 +207,7 @@ const AuditDetails: React.FC = () => {
   };
 
   const handleStartAudit = () => {
-    // In a real app, this would be an API call to update the audit status
     console.log('Starting audit:', id);
-    // Update audit status to "In Progress"
     navigate('/audits');
   };
 
@@ -226,7 +224,6 @@ const AuditDetails: React.FC = () => {
   };
 
   const handleSubmitForReview = () => {
-    // In a real app, this would be an API call to submit files and questionnaire
     console.log('Submitting for review:', {
       questionnaireFile,
       selectedFiles
@@ -234,39 +231,32 @@ const AuditDetails: React.FC = () => {
   };
 
   const handleSendFeedback = () => {
-    // In a real app, this would be an API call to send feedback
     console.log('Sending feedback:', feedback);
     setFeedback('');
   };
 
   const handleCompleteAudit = () => {
-    // In a real app, this would be an API call to complete the audit
     console.log('Completing audit:', id);
     navigate('/audits');
   };
 
   const handleResponseChange = (questionId: string, value: string) => {
-    // In a real app, this would update the state and send to the backend
     console.log('Response updated for question', questionId, value);
   };
 
   const handleStatusChange = (questionId: string, status: AuditQuestion['status']) => {
-    // In a real app, this would update the state and send to the backend
     console.log('Status updated for question', questionId, status);
   };
 
   const handleEvidenceUpload = (questionId: string) => {
-    // In a real app, this would trigger a file upload
     console.log('Evidence upload for question', questionId);
   };
 
   const handleRecommendationChange = (questionId: string, value: string) => {
-    // In a real app, this would update the state and send to the backend
     console.log('Recommendation updated for question', questionId, value);
   };
 
   const handleDownloadFile = (file: { url: string; name: string }) => {
-    // In a real app, this would trigger a file download
     console.log('Downloading file:', file);
   };
 
@@ -442,117 +432,6 @@ const AuditDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Progress Summary */}
-          <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Progress Summary</h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">Current status of the audit questions.</p>
-            </div>
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="bg-gray-50 overflow-hidden shadow rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                        <ClipboardCheck className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Total Questions</dt>
-                          <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 overflow-hidden shadow rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <CheckCircle className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Compliant</dt>
-                          <dd className="text-lg font-medium text-gray-900">{stats.compliant}</dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 overflow-hidden shadow rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-red-500 rounded-md p-3">
-                        <XCircle className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Non-Compliant</dt>
-                          <dd className="text-lg font-medium text-gray-900">{stats.nonCompliant}</dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 overflow-hidden shadow rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                        <AlertCircle className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Partial Compliance</dt>
-                          <dd className="text-lg font-medium text-gray-900">{stats.partial}</dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-500">Completion Progress</h4>
-                <div className="mt-2">
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div className="flex h-4 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-green-500" 
-                        style={{ width: `${(stats.compliant / stats.total) * 100}%` }}
-                      ></div>
-                      <div 
-                        className="bg-yellow-500" 
-                        style={{ width: `${(stats.partial / stats.total) * 100}%` }}
-                      ></div>
-                      <div 
-                        className="bg-red-500" 
-                        style={{ width: `${(stats.nonCompliant / stats.total) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between mt-2 text-xs text-gray-500">
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
-                      <span>Compliant ({Math.round((stats.compliant / stats.total) * 100)}%)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-1"></div>
-                      <span>Partial ({Math.round((stats.partial / stats.total) * 100)}%)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
-                      <span>Non-Compliant ({Math.round((stats.nonCompliant / stats.total) * 100)}%)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-gray-300 rounded-full mr-1"></div>
-                      <span>Not Answered ({Math.round(((stats.total - stats.answered) / stats.total) * 100)}%)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* File upload sections for participant */}
           {user?.role === 'participant' && audit.status === 'In Progress' && (
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -626,7 +505,7 @@ const AuditDetails: React.FC = () => {
               <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
                 <textarea
                   rows={4}
-                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500  block w-full sm:text-sm border-gray-300 rounded-md"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   placeholder="Enter your feedback here..."
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
