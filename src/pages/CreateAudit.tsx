@@ -24,10 +24,6 @@ const CreateAudit: React.FC = () => {
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [showParticipantDropdown, setShowParticipantDropdown] = useState(false);
   
-  // Refs for dropdowns to handle outside clicks
-  const companyDropdownRef = useRef<HTMLDivElement>(null);
-  const participantDropdownRef = useRef<HTMLDivElement>(null);
-  
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -75,38 +71,17 @@ const CreateAudit: React.FC = () => {
       }
     }
   });
-  
-  // В начале компонента, после импортов
+
   useEffect(() => {
-    // При монтировании компонента
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     
-    // При размонтировании компонента возвращаем прокрутку
     return () => {
       document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
     };
   }, []);
 
-  // Handle outside clicks to close dropdowns
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
-        setShowCompanyDropdown(false);
-      }
-      if (participantDropdownRef.current && !participantDropdownRef.current.contains(event.target as Node)) {
-        setShowParticipantDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Clear participant when company changes
   useEffect(() => {
     if (formData.company && formData.participant && formData.participant.organization !== formData.company.name) {
       setFormData(prev => ({ ...prev, participant: null }));
@@ -116,8 +91,29 @@ const CreateAudit: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would handle the form submission
-    console.log('Form data:', formData);
+    
+    // Create new audit with "Planned" status
+    const newAudit = {
+      id: Date.now().toString(),
+      name: formData.name,
+      company: formData.company?.name || '',
+      companyId: formData.company?.id || '',
+      date: formData.startDate,
+      status: 'Planned',
+      completion: 0,
+      expert: user?.name || '',
+      participant: formData.participant,
+      endDate: formData.endDate,
+      framework: formData.framework,
+      objective: formData.objective,
+      questionnaire: formData.questionnaire,
+      history: []
+    };
+
+    // In a real app, you would save this to your backend
+    console.log('Created new audit:', newAudit);
+    
+    // Navigate to the audits list
     navigate('/audits');
   };
 
@@ -237,7 +233,7 @@ const CreateAudit: React.FC = () => {
               </div>
             </div>
 
-            <div ref={companyDropdownRef}>
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Company
               </label>
@@ -279,7 +275,7 @@ const CreateAudit: React.FC = () => {
               </div>
             </div>
 
-            <div ref={participantDropdownRef}>
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Company Representative
               </label>

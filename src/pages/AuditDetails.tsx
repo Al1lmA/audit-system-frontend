@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { 
   ClipboardCheck, 
@@ -12,8 +12,22 @@ import {
   XCircle,
   AlertCircle,
   Download,
-  Upload
+  Upload,
+  Send,
+  History
 } from 'lucide-react';
+
+interface AuditHistory {
+  id: string;
+  date: string;
+  type: 'submission' | 'feedback' | 'status_change';
+  content: string;
+  files?: {
+    name: string;
+    url: string;
+    type: string;
+  }[];
+}
 
 interface AuditQuestion {
   id: string;
@@ -28,8 +42,12 @@ interface AuditQuestion {
 const AuditDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'results'>('overview');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'overview' | 'results' | 'history'>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [feedback, setFeedback] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [questionnaireFile, setQuestionnaireFile] = useState<File | null>(null);
   
   // Mock data - in a real app, this would be fetched from an API
   const audit = {
@@ -39,9 +57,13 @@ const AuditDetails: React.FC = () => {
     companyId: '1',
     date: '2025-02-15',
     dueDate: '2025-03-15',
-    status: 'In Progress',
-    completion: 65,
+    status: 'Planned', // Changed to 'Planned' for demonstration
+    completion: 0,
     expert: 'John Expert',
+    participant: {
+      name: 'Jane Participant',
+      email: 'jane@acme.com'
+    },
     description: 'This audit evaluates the IT infrastructure, security controls, and compliance with industry standards.',
     framework: 'ITIL v4',
     categories: ['Infrastructure', 'Security', 'Compliance', 'Data Management', 'Business Continuity'],
@@ -109,7 +131,15 @@ const AuditDetails: React.FC = () => {
         evidence: null,
         recommendation: null
       }
-    ] as AuditQuestion[]
+    ] as AuditQuestion[],
+    history: [
+      {
+        id: '1',
+        date: '2025-02-15',
+        type: 'status_change',
+        content: 'Audit created and planned'
+      }
+    ] as AuditHistory[]
   };
 
   // Filter questions by category
@@ -124,6 +154,45 @@ const AuditDetails: React.FC = () => {
     compliant: audit.questions.filter(q => q.status === 'compliant').length,
     nonCompliant: audit.questions.filter(q => q.status === 'non-compliant').length,
     partial: audit.questions.filter(q => q.status === 'partial').length,
+  };
+
+  const handleStartAudit = () => {
+    // In a real app, this would be an API call
+    console.log('Starting audit:', id);
+    // Update audit status to "In Progress"
+    navigate('/audits');
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFiles(Array.from(event.target.files));
+    }
+  };
+
+  const handleQuestionnaireUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setQuestionnaireFile(event.target.files[0]);
+    }
+  };
+
+  const handleSubmitForReview = () => {
+    // In a real app, this would be an API call to submit files and questionnaire
+    console.log('Submitting for review:', {
+      questionnaireFile,
+      selectedFiles
+    });
+  };
+
+  const handleSendFeedback = () => {
+    // In a real app, this would be an API call to send feedback
+    console.log('Sending feedback:', feedback);
+    setFeedback('');
+  };
+
+  const handleCompleteAudit = () => {
+    // In a real app, this would be an API call to complete the audit
+    console.log('Completing audit:', id);
+    navigate('/audits');
   };
 
   const handleResponseChange = (questionId: string, value: string) => {
@@ -148,6 +217,7 @@ const AuditDetails: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header section */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Link to="/audits" className="mr-4 text-indigo-600 hover:text-indigo-800">
@@ -156,23 +226,43 @@ const AuditDetails: React.FC = () => {
           <h1 className="text-2xl font-semibold text-gray-900">{audit.name}</h1>
         </div>
         <div className="flex space-x-3">
-          {audit.status === 'In Progress' && (
+          {audit.status === 'Planned' && user?.role === 'expert' && (
             <button
+              onClick={handleStartAudit}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              onClick={() => console.log('Complete audit')}
             >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Complete Audit
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Start Audit
             </button>
           )}
-          {audit.status === 'Completed' && (
-            <Link
-              to={`/reports/${id}`}
+          
+          {audit.status === 'In Progress' && user?.role === 'participant' && (
+            <button
+              onClick={handleSubmitForReview}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              <FileText className="h-4 w-4 mr-2" />
-              Generate Report
-            </Link>
+              <Send className="h-4 w-4 mr-2" />
+              Submit for Review
+            </button>
+          )}
+
+          {audit.status === 'In Progress' && user?.role === 'expert' && (
+            <>
+              <button
+                onClick={handleCompleteAudit}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Complete Audit
+              </button>
+              <button
+                onClick={handleSendFeedback}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send Feedback
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -192,13 +282,13 @@ const AuditDetails: React.FC = () => {
           </button>
           <button
             className={`${
-              activeTab === 'questions'
+              activeTab === 'history'
                 ? 'border-indigo-500 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            onClick={() => setActiveTab('questions')}
+            onClick={() => setActiveTab('history')}
           >
-            Audit Questions
+            History
           </button>
           <button
             className={`${
@@ -213,7 +303,7 @@ const AuditDetails: React.FC = () => {
         </nav>
       </div>
 
-      {/* Overview Tab */}
+      {/* Content based on active tab */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -407,169 +497,134 @@ const AuditDetails: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* File upload sections for participant */}
+          {user?.role === 'participant' && audit.status === 'In Progress' && (
+            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+              <div className="px-4 py-5 sm:px-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Submit Audit Materials</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Upload your completed questionnaire and supporting documents
+                </p>
+              </div>
+              <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+                <div className="space-y-6">
+                  {/* Questionnaire upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Completed Questionnaire
+                    </label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                      <div className="space-y-1 text-center">
+                        <div className="flex text-sm text-gray-600">
+                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                            <span>Upload completed questionnaire</span>
+                            <input
+                              type="file"
+                              className="sr-only"
+                              accept=".xlsx"
+                              onChange={handleQuestionnaireUpload}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-xs text-gray-500">XLSX file only</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Supporting documents upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Supporting Documents
+                    </label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                      <div className="space-y-1 text-center">
+                        <div className="flex text-sm text-gray-600">
+                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                            <span>Upload supporting documents</span>
+                            <input
+                              type="file"
+                              className="sr-only"
+                              multiple
+                              onChange={handleFileUpload}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-xs text-gray-500">Any file type accepted</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Feedback section for expert */}
+          {user?.role === 'expert' && audit.status === 'In Progress' && (
+            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+              <div className="px-4 py-5 sm:px-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Feedback</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Provide feedback or request improvements
+                </p>
+              </div>
+              <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+                <textarea
+                  rows={4}
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  placeholder="Enter your feedback here..."
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Questions Tab */}
-      {activeTab === 'questions' && (
-        <div className="space-y-6">
-          <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-              <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Audit Questions</h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  {selectedCategory === 'all' 
-                    ? 'All audit questions' 
-                    : `Questions for ${selectedCategory} category`}
-                </p>
-              </div>
-              <div>
-                <select
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <option value="all">All Categories</option>
-                  {audit.categories.map((category) => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="border-t border-gray-200">
-              <ul className="divide-y divide-gray-200">
-                {filteredQuestions.map((question) => (
-                  <li key={question.id} className="px-4 py-5 sm:px-6">
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 mt-1">
-                        {question.status === 'compliant' && (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        )}
-                        {question.status === 'non-compliant' && (
-                          <XCircle className="h-5 w-5 text-red-500" />
-                        )}
-                        {question.status === 'partial' && (
-                          <AlertCircle className="h-5 w-5 text-yellow-500" />
-                        )}
-                        {question.status === 'not-answered' && (
-                          <div className="h-5 w-5 rounded-full border-2 border-gray-300"></div>
-                        )}
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <div className="flex justify-between">
-                          <p className="text-sm font-medium text-gray-900">{question.question}</p>
-                          <p className="text-sm text-gray-500">{question.category}</p>
-                        </div>
-                        
-                        {/* Response field */}
-                        <div className="mt-3">
-                          <label htmlFor={`response-${question.id}`} className="block text-sm font-medium text-gray-700">
-                            Response
-                          </label>
-                          <div className="mt-1">
-                            <textarea
-                              id={`response-${question.id}`}
-                              name={`response-${question.id}`}
-                              rows={3}
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                              placeholder="Enter response..."
-                              value={question.response || ''}
-                              onChange={(e) => handleResponseChange(question.id, e.target.value)}
-                              disabled={user?.role !== 'participant'}
-                            ></textarea>
-                          </div>
-                        </div>
-                        
-                        {/* Status and evidence */}
-                        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                          <div>
-                            <label htmlFor={`status-${question.id}`} className="block text-sm font-medium text-gray-700">
-                              Compliance Status
-                            </label>
-                            <select
-                              id={`status-${question.id}`}
-                              name={`status-${question.id}`}
-                              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                              value={question.status}
-                              onChange={(e) => handleStatusChange(question.id, e.target.value as AuditQuestion['status'])}
-                              disabled={user?.role !== 'expert'}
-                            >
-                              <option value="not-answered">Not Answered</option>
-                              <option value="compliant">Compliant</option>
-                              <option value="non-compliant">Non-Compliant</option>
-                              <option value="partial">Partial Compliance</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Evidence
-                            </label>
-                            <div className="mt-1 flex items-center">
-                              {question.evidence ? (
-                                <div className="flex items-center">
-                                  <a 
-                                    href="#" 
-                                    className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      console.log('Download evidence:', question.evidence);
-                                    }}
-                                  >
-                                    <Download className="h-4 w-4 mr-1" />
-                                    {question.evidence}
-                                  </a>
-                                </div>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                  onClick={() => handleEvidenceUpload(question.id)}
-                                  disabled={user?.role !== 'participant'}
-                                >
-                                  <Upload className="h-4 w-4 mr-1" />
-                                  Upload Evidence
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Recommendation field */}
-                        {(user?.role === 'expert' || question.recommendation) && (
-                          <div className="mt-3">
-                            <label htmlFor={`recommendation-${question.id}`} className="block text-sm font-medium text-gray-700">
-                              Recommendation
-                            </label>
-                            <div className="mt-1">
-                              <textarea
-                                id={`recommendation-${question.id}`}
-                                name={`recommendation-${question.id}`}
-                                rows={2}
-                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                placeholder="Enter recommendation..."
-                                value={question.recommendation || ''}
-                                onChange={(e) => handleRecommendationChange(question.id, e.target.value)}
-                                disabled={user?.role !== 'expert'}
-                              ></textarea>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+      {activeTab === 'history' && (
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">Audit History</h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Timeline of audit activities and submissions
+            </p>
+          </div>
+          <div className="border-t border-gray-200">
+            <ul className="divide-y divide-gray-200">
+              {audit.history.map((item) => (
+                <li key={item.id} className="px-4 py-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <History className="h-6 w-6 text-gray-400" />
                     </div>
-                  </li>
-                ))}
-              </ul>
-              {filteredQuestions.length === 0 && (
-                <div className="px-4 py-5 sm:px-6 text-center text-gray-500">
-                  No questions found for the selected category.
-                </div>
-              )}
-            </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{item.content}</p>
+                      <p className="text-sm text-gray-500">{item.date}</p>
+                      {item.files && item.files.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          {item.files.map((file, index) => (
+                            <a
+                              key={index}
+                              href={file.url}
+                              download
+                              className="flex items-center text-sm text-indigo-600 hover:text-indigo-900"
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              {file.name}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
 
-      {/* Results Tab */}
       {activeTab === 'results' && (
         <div className="space-y-6">
           <div className="bg-white shadow sm:rounded-lg">
