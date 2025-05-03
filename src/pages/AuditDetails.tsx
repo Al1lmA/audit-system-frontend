@@ -138,6 +138,56 @@ const AuditDetails: React.FC = () => {
         date: '2025-02-15',
         type: 'status_change',
         content: 'Audit created and planned'
+      },
+      {
+        id: '2',
+        date: '2025-02-16',
+        type: 'status_change',
+        content: 'Audit started by John Expert',
+        files: [
+          {
+            name: 'audit_questionnaire.xlsx',
+            url: '/files/audit_questionnaire.xlsx',
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          }
+        ]
+      },
+      {
+        id: '3',
+        date: '2025-02-18',
+        type: 'submission',
+        content: 'Initial submission by Jane Participant',
+        files: [
+          {
+            name: 'completed_questionnaire.xlsx',
+            url: '/files/completed_questionnaire.xlsx',
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          },
+          {
+            name: 'evidence1.pdf',
+            url: '/files/evidence1.pdf',
+            type: 'application/pdf'
+          }
+        ]
+      },
+      {
+        id: '4',
+        date: '2025-02-19',
+        type: 'feedback',
+        content: 'Please provide additional evidence for security controls implementation'
+      },
+      {
+        id: '5',
+        date: '2025-02-20',
+        type: 'submission',
+        content: 'Updated submission with additional evidence',
+        files: [
+          {
+            name: 'security_controls.pdf',
+            url: '/files/security_controls.pdf',
+            type: 'application/pdf'
+          }
+        ]
       }
     ] as AuditHistory[]
   };
@@ -157,7 +207,7 @@ const AuditDetails: React.FC = () => {
   };
 
   const handleStartAudit = () => {
-    // In a real app, this would be an API call
+    // In a real app, this would be an API call to update the audit status
     console.log('Starting audit:', id);
     // Update audit status to "In Progress"
     navigate('/audits');
@@ -213,6 +263,11 @@ const AuditDetails: React.FC = () => {
   const handleRecommendationChange = (questionId: string, value: string) => {
     // In a real app, this would update the state and send to the backend
     console.log('Recommendation updated for question', questionId, value);
+  };
+
+  const handleDownloadFile = (file: { url: string; name: string }) => {
+    // In a real app, this would trigger a file download
+    console.log('Downloading file:', file);
   };
 
   return (
@@ -571,7 +626,7 @@ const AuditDetails: React.FC = () => {
               <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
                 <textarea
                   rows={4}
-                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500  block w-full sm:text-sm border-gray-300 rounded-md"
                   placeholder="Enter your feedback here..."
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
@@ -604,15 +659,14 @@ const AuditDetails: React.FC = () => {
                       {item.files && item.files.length > 0 && (
                         <div className="mt-2 space-y-2">
                           {item.files.map((file, index) => (
-                            <a
+                            <button
                               key={index}
-                              href={file.url}
-                              download
+                              onClick={() => handleDownloadFile(file)}
                               className="flex items-center text-sm text-indigo-600 hover:text-indigo-900"
                             >
                               <Download className="h-4 w-4 mr-1" />
                               {file.name}
-                            </a>
+                            </button>
                           ))}
                         </div>
                       )}
