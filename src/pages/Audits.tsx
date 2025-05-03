@@ -95,6 +95,7 @@ const Audits: React.FC = () => {
   const filteredAudits = mockAudits
     .filter(audit => 
       (companyIdFilter ? audit.companyId === companyIdFilter : true) &&
+      (user?.role === 'participant' ? audit.company === user.organization : true) &&
       (audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
        audit.company.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (statusFilter === 'all' || audit.status === statusFilter) &&
@@ -122,6 +123,8 @@ const Audits: React.FC = () => {
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {companyIdFilter 
               ? 'Audits for the selected company' 
+              : user?.role === 'participant'
+              ? `Audits for ${user.organization}`
               : 'Manage and view all IT audits'}
           </p>
         </div>
@@ -145,7 +148,7 @@ const Audits: React.FC = () => {
             </div>
             <input
               type="text"
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
               placeholder="Search audits..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -268,7 +271,7 @@ const Audits: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {audit.date}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4  whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       audit.status === 'Completed' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
                       audit.status === 'In Progress' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :

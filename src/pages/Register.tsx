@@ -1,7 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck, Search } from 'lucide-react';
+
+// Custom hook to detect clicks outside an element
+const useClickOutside = (ref: React.RefObject<HTMLElement>, callback: () => void) => {
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [ref, callback]);
+};
 
 interface RegisterFormData {
   name: string;
@@ -12,12 +28,38 @@ interface RegisterFormData {
   organization?: string;
 }
 
+interface Company {
+  id: string;
+  name: string;
+}
+
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<RegisterFormData>();
   const password = watch('password');
   const role = watch('role');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Use the custom hook to close dropdown when clicking outside
+  useClickOutside(dropdownRef, () => {
+    setShowCompanyDropdown(false);
+  });
+
+  // Mock companies data
+  const companies: Company[] = [
+    { id: '1', name: 'Acme Inc.' },
+    { id: '2', name: 'TechCorp' },
+    { id: '3', name: 'Global Systems' },
+    { id: '4', name: 'Innovate Solutions' },
+    { id: '5', name: 'DataTech' },
+  ];
+
+  const filteredCompanies = companies.filter(company =>
+    company.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const onSubmit = (data: RegisterFormData) => {
     // In a real app, this would be an API call to register the user
@@ -27,18 +69,18 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
-            <ClipboardCheck className="h-16 w-16 text-indigo-600" />
+            <ClipboardCheck className="h-16 w-16 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Create a new account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/login" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
               sign in to your existing account
             </Link>
           </p>
@@ -52,12 +94,12 @@ const Register: React.FC = () => {
               <input
                 id="name"
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Full Name"
                 {...register('name', { required: 'Name is required' })}
               />
               {errors.name && (
-                <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.name.message}</p>
               )}
             </div>
             <div className="mb-4">
@@ -68,7 +110,7 @@ const Register: React.FC = () => {
                 id="email"
                 type="email"
                 autoComplete="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Email address"
                 {...register('email', { 
                   required: 'Email is required',
@@ -79,7 +121,7 @@ const Register: React.FC = () => {
                 })}
               />
               {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.email.message}</p>
               )}
             </div>
             <div className="mb-4">
@@ -89,7 +131,7 @@ const Register: React.FC = () => {
               <input
                 id="password"
                 type="password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Password"
                 {...register('password', { 
                   required: 'Password is required',
@@ -100,7 +142,7 @@ const Register: React.FC = () => {
                 })}
               />
               {errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.password.message}</p>
               )}
             </div>
             <div className="mb-4">
@@ -110,7 +152,7 @@ const Register: React.FC = () => {
               <input
                 id="confirmPassword"
                 type="password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Confirm Password"
                 {...register('confirmPassword', { 
                   required: 'Please confirm your password',
@@ -118,11 +160,11 @@ const Register: React.FC = () => {
                 })}
               />
               {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.confirmPassword.message}</p>
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Role
               </label>
               <div className="flex space-x-4">
@@ -131,10 +173,10 @@ const Register: React.FC = () => {
                     id="expert"
                     type="radio"
                     value="expert"
-                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600"
                     {...register('role', { required: 'Please select a role' })}
                   />
-                  <label htmlFor="expert" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="expert" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                     Expert
                   </label>
                 </div>
@@ -143,47 +185,80 @@ const Register: React.FC = () => {
                     id="participant"
                     type="radio"
                     value="participant"
-                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600"
                     {...register('role', { required: 'Please select a role' })}
                   />
-                  <label htmlFor="participant" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="participant" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                     Participant
                   </label>
                 </div>
               </div>
               {errors.role && (
-                <p className="text-red-500 text-xs mt-1">{errors.role.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.role.message}</p>
               )}
             </div>
             {role === 'participant' && (
               <div className="mb-4">
-                <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Organization
                 </label>
-                <input
-                  id="organization"
-                  type="text"
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your organization name"
-                  {...register('organization', { 
-                    required: role === 'participant' ? 'Organization is required for participants' : false
-                  })}
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Search organization..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setShowCompanyDropdown(true);
+                    }}
+                    onFocus={() => setShowCompanyDropdown(true)}
+                  />
+                  {showCompanyDropdown && (
+                    <div 
+                      ref={dropdownRef}
+                      className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm"
+                    >
+                      {filteredCompanies.map((company) => (
+                        <button
+                          key={company.id}
+                          type="button"
+                          className="w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
+                          onClick={() => {
+                            setValue('organization', company.name);
+                            setSearchTerm(company.name);
+                            setShowCompanyDropdown(false);
+                          }}
+                        >
+                          {company.name}
+                        </button>
+                      ))}
+                      {filteredCompanies.length === 0 && (
+                        <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                          No organizations found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {errors.organization && (
-                  <p className="text-red-500 text-xs mt-1">{errors.organization.message}</p>
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.organization.message}</p>
                 )}
               </div>
             )}
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+            <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>
           )}
 
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Register
             </button>

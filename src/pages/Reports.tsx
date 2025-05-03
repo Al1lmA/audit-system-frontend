@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Building2, ClipboardCheck, Search } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
 
 interface ReportTarget {
   type: 'company' | 'audit';
@@ -8,6 +9,7 @@ interface ReportTarget {
 }
 
 const Reports: React.FC = () => {
+  const { user } = useUser();
   const [showSelector, setShowSelector] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState<ReportTarget | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,17 +22,21 @@ const Reports: React.FC = () => {
   ];
 
   const audits = [
-    { id: '1', name: 'Annual IT Infrastructure Audit - Acme Inc.' },
-    { id: '2', name: 'Security Compliance Audit - TechCorp' },
-    { id: '3', name: 'Data Protection Assessment - Global Systems' },
+    { id: '1', name: 'Annual IT Infrastructure Audit - Acme Inc.', companyId: '1' },
+    { id: '2', name: 'Security Compliance Audit - TechCorp', companyId: '2' },
+    { id: '3', name: 'Data Protection Assessment - Global Systems', companyId: '3' },
   ];
 
   const filteredCompanies = companies.filter(company =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase())
+    user?.role === 'participant'
+      ? company.name === user.organization
+      : company.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredAudits = audits.filter(audit =>
-    audit.name.toLowerCase().includes(searchTerm.toLowerCase())
+    user?.role === 'participant'
+      ? audit.companyId === companies.find(c => c.name === user.organization)?.id
+      : audit.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleGenerateReport = () => {
@@ -52,13 +58,15 @@ const Reports: React.FC = () => {
           <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Reports</h1>
         </div>
-        <button
-          onClick={handleGenerateReport}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          Generate New Report
-        </button>
+        {user?.role !== 'participant' && (
+          <button
+            onClick={handleGenerateReport}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Generate New Report
+          </button>
+        )}
       </div>
       
       {showSelector && (
@@ -146,7 +154,7 @@ const Reports: React.FC = () => {
         
         <div className="p-6">
           <div className="text-center text-gray-500 dark:text-gray-400">
-            No reports generated yet. Generate your first report to get started.
+            No reports generated yet. {user?.role !== 'participant' && 'Generate your first report to get started.'}
           </div>
         </div>
       </div>
