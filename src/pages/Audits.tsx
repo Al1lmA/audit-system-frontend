@@ -93,15 +93,26 @@ const Audits: React.FC = () => {
   };
 
   const filteredAudits = mockAudits
-    .filter(audit => 
-      (companyIdFilter ? audit.companyId === companyIdFilter : true) &&
-      (user?.role === 'participant' ? audit.company === user.organization : true) &&
-      (audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       audit.company.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (statusFilter === 'all' || audit.status === statusFilter) &&
-      (!dateRange.from || audit.date >= dateRange.from) &&
-      (!dateRange.to || audit.date <= dateRange.to)
-    )
+    .filter(audit => {
+      // Base filters
+      const matchesSearch = audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          audit.company.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || audit.status === statusFilter;
+      const matchesDate = (!dateRange.from || audit.date >= dateRange.from) &&
+                         (!dateRange.to || audit.date <= dateRange.to);
+      const matchesCompany = companyIdFilter ? audit.companyId === companyIdFilter : true;
+
+      // Participant-specific filters
+      if (user?.role === 'participant') {
+        return matchesSearch && 
+               matchesStatus && 
+               matchesDate && 
+               audit.company === user.organization &&
+               (audit.status === 'In Progress' || audit.status === 'Completed');
+      }
+
+      return matchesSearch && matchesStatus && matchesDate && matchesCompany;
+    })
     .sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];

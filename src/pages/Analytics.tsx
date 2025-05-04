@@ -14,7 +14,7 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { ArrowUpDown, Filter, Building2, ClipboardCheck, Search } from 'lucide-react';
+import { ArrowUpDown, Filter, Building2, ClipboardCheck, Search, Upload, FileSpreadsheet, X } from 'lucide-react';
 
 interface FilterTarget {
   type: 'company' | 'audit';
@@ -28,7 +28,8 @@ const Analytics: React.FC = () => {
   const [selectedTarget, setSelectedTarget] = useState<FilterTarget | null>(null);
   const [showFilterSelector, setShowFilterSelector] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
   // Mock data for companies and audits
   const companies = [
     { id: '1', name: 'Acme Inc.' },
@@ -107,6 +108,15 @@ const Analytics: React.FC = () => {
     console.log('Selected target for analytics:', target);
   };
 
+  // Add file upload handler
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setUploadedFile(event.target.files[0]);
+      // Here you would process the file
+      console.log('File uploaded:', event.target.files[0]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -115,10 +125,20 @@ const Analytics: React.FC = () => {
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {selectedTarget 
               ? `Analytics for ${selectedTarget.name}`
-              : 'Select a company or audit to view analytics'}
+              : 'Select a target or upload data for analysis'}
           </p>
         </div>
         <div className="flex space-x-4">
+          <label className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload XLSX
+            <input
+              type="file"
+              className="hidden"
+              accept=".xlsx"
+              onChange={handleFileUpload}
+            />
+          </label>
           <button
             onClick={() => setShowFilterSelector(true)}
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -140,6 +160,24 @@ const Analytics: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Show uploaded file info if present */}
+      {uploadedFile && !selectedTarget && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <FileSpreadsheet className="h-5 w-5 text-green-500 mr-2" />
+              <span className="text-sm text-gray-900 dark:text-white">{uploadedFile.name}</span>
+            </div>
+            <button
+              onClick={() => setUploadedFile(null)}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter Selector Modal */}
       {showFilterSelector && (

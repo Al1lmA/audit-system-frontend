@@ -62,9 +62,14 @@ const Register: React.FC = () => {
   );
 
   const onSubmit = (data: RegisterFormData) => {
+    // Ensure organization is required for participants
+    if (data.role === 'participant' && !data.organization) {
+      setError('Organization is required for participants');
+      return;
+    }
+
     // In a real app, this would be an API call to register the user
     console.log('Registration data:', data);
-    // Simulate successful registration
     navigate('/login');
   };
 
