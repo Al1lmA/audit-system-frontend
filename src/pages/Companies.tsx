@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, Plus, Search, Edit, Trash2, ArrowUpDown } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
+import CompanyForm from '../components/CompanyForm';
 
 interface Company {
   id: string;
@@ -12,12 +13,17 @@ interface Company {
   contactPerson: string;
   email: string;
   lastAudit: string | null;
+  phone: string;
+  address: string;
+  description: string;
 }
 
 const Companies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<keyof Company>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [showModal, setShowModal] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const { user } = useUser();
   const isAdmin = user?.role === 'admin';
   
@@ -31,7 +37,10 @@ const Companies: React.FC = () => {
       location: 'New York, USA',
       contactPerson: 'John Smith',
       email: 'john@acme.com',
-      lastAudit: '2025-01-15'
+      lastAudit: '2025-01-15',
+      phone: '+1 234 567 8900',
+      address: '123 Main St, New York, NY 10001',
+      description: 'Leading manufacturer of industrial equipment'
     },
     {
       id: '2',
@@ -41,7 +50,10 @@ const Companies: React.FC = () => {
       location: 'San Francisco, USA',
       contactPerson: 'Jane Doe',
       email: 'jane@techcorp.com',
-      lastAudit: '2025-02-20'
+      lastAudit: '2025-02-20',
+      phone: '+1 234 567 8901',
+      address: '456 Tech Ave, San Francisco, CA 94105',
+      description: 'Innovative software solutions provider'
     },
     {
       id: '3',
@@ -51,7 +63,10 @@ const Companies: React.FC = () => {
       location: 'London, UK',
       contactPerson: 'Mike Johnson',
       email: 'mike@globalsys.com',
-      lastAudit: '2025-03-10'
+      lastAudit: '2025-03-10',
+      phone: '+44 20 7123 4567',
+      address: '789 Tech Lane, London, UK EC1A 1BB',
+      description: 'Global IT services and consulting'
     }
   ];
 
@@ -62,6 +77,28 @@ const Companies: React.FC = () => {
       setSortField(field);
       setSortDirection('asc');
     }
+  };
+
+  const handleAddCompany = () => {
+    setEditingCompany(null);
+    setShowModal(true);
+  };
+
+  const handleEditCompany = (company: Company) => {
+    setEditingCompany(company);
+    setShowModal(true);
+  };
+
+  const handleSubmit = (data: Omit<Company, 'id' | 'lastAudit'>) => {
+    if (editingCompany) {
+      // Update existing company
+      console.log('Updating company:', { ...editingCompany, ...data });
+    } else {
+      // Add new company
+      console.log('Adding new company:', data);
+    }
+    setShowModal(false);
+    setEditingCompany(null);
   };
 
   const sortedAndFilteredCompanies = mockCompanies
@@ -97,13 +134,13 @@ const Companies: React.FC = () => {
           </p>
         </div>
         {isAdmin && (
-          <Link
-            to="/companies/new"
+          <button
+            onClick={handleAddCompany}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Company
-          </Link>
+          </button>
         )}
       </div>
 
@@ -218,12 +255,12 @@ const Companies: React.FC = () => {
                   {isAdmin && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex space-x-2">
-                        <Link
-                          to={`/companies/${company.id}/edit`}
+                        <button
+                          onClick={() => handleEditCompany(company)}
                           className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                         >
                           <Edit className="h-5 w-5" />
-                        </Link>
+                        </button>
                         <button
                           className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                           onClick={() => {
@@ -249,6 +286,26 @@ const Companies: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Add the modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              {editingCompany ? 'Edit Company' : 'Add New Company'}
+            </h2>
+            <CompanyForm
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setShowModal(false);
+                setEditingCompany(null);
+              }}
+              initialData={editingCompany || undefined}
+              isEdit={!!editingCompany}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

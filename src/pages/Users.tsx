@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Users as UsersIcon, Plus, Search, Edit, Trash2, ArrowUpDown } from 'lucide-react';
+import UserForm from '../components/UserForm';
 
 interface User {
   id: string;
@@ -14,7 +16,7 @@ interface User {
 const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   // Mock data
@@ -53,12 +55,13 @@ const Users: React.FC = () => {
   );
 
   const handleAddUser = () => {
-    setShowAddModal(true);
+    setEditingUser(null);
+    setShowModal(true);
   };
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
-    setShowAddModal(true);
+    setShowModal(true);
   };
 
   const handleDeleteUser = (userId: string) => {
@@ -66,6 +69,18 @@ const Users: React.FC = () => {
       // Delete user logic would go here
       console.log('Delete user:', userId);
     }
+  };
+
+  const handleSubmit = (data: Omit<User, 'id' | 'status' | 'lastLogin'>) => {
+    if (editingUser) {
+      // Update existing user
+      console.log('Updating user:', { ...editingUser, ...data });
+    } else {
+      // Add new user
+      console.log('Adding new user:', data);
+    }
+    setShowModal(false);
+    setEditingUser(null);
   };
 
   return (
@@ -152,7 +167,9 @@ const Users: React.FC = () => {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.name}
+                          <Link to={`/users/${user.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                            {user.name}
+                          </Link>
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           {user.email}
@@ -207,6 +224,26 @@ const Users: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Add the modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              {editingUser ? 'Edit User' : 'Add New User'}
+            </h2>
+            <UserForm
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setShowModal(false);
+                setEditingUser(null);
+              }}
+              initialData={editingUser || undefined}
+              isEdit={!!editingUser}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

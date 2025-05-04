@@ -16,10 +16,10 @@ const Sidebar: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['expert', 'participant', 'admin'] },
     { name: 'Companies', href: '/companies', icon: Building2, roles: ['expert', 'admin'] },
+    { name: 'Users', href: '/users', icon: Users, roles: ['admin'] },
     { name: 'Audits', href: '/audits', icon: ClipboardCheck, roles: ['expert', 'participant', 'admin'] },
     { name: 'Analytics', href: '/analytics', icon: BarChart4, roles: ['expert', 'admin'] },
     { name: 'Reports', href: '/reports', icon: FileText, roles: ['expert', 'participant', 'admin'] },
-    { name: 'Users', href: '/users', icon: Users, roles: ['admin'] },
   ];
 
   const filteredNavigation = navigation.filter(item => 

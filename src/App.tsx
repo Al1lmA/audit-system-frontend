@@ -14,6 +14,7 @@ import Analytics from './pages/Analytics';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
+import UserDetails from './pages/UserDetails';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import './index.css';
@@ -39,6 +40,7 @@ function App() {
               <Route path="/reports" element={<Reports />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/users" element={<Users />} />
+              <Route path="/users/:id" element={<UserDetails />} />
             </Route>
           </Routes>
         </Router>
