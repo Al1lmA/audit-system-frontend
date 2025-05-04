@@ -18,6 +18,8 @@ const Users: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [sortField, setSortField] = useState<keyof User>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Mock data
   const mockUsers: User[] = [
@@ -48,11 +50,37 @@ const Users: React.FC = () => {
     }
   ];
 
-  const filteredUsers = mockUsers.filter(user =>
-    (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (roleFilter === 'all' || user.role === roleFilter)
-  );
+  const handleSort = (field: keyof User) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const filteredUsers = mockUsers
+    .filter(user =>
+      (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (roleFilter === 'all' || user.role === roleFilter)
+    )
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (aValue === null && bValue === null) return 0;
+      if (aValue === null) return sortDirection === 'asc' ? 1 : -1;
+      if (bValue === null) return sortDirection === 'asc' ? -1 : 1;
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      return 0;
+    });
 
   const handleAddUser = () => {
     setEditingUser(null);
@@ -138,19 +166,43 @@ const Users: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  User
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
+                    onClick={() => handleSort('name')}
+                  >
+                    <span>User</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Role
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
+                    onClick={() => handleSort('role')}
+                  >
+                    <span>Role</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'role' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Organization
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
+                    onClick={() => handleSort('status')}
+                  >
+                    <span>Status</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'status' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Last Login
+                  <button 
+                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
+                    onClick={() => handleSort('lastLogin')}
+                  >
+                    <span>Last Login</span>
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'lastLogin' ? 'text-indigo-500' : ''}`} />
+                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions

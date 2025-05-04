@@ -7,7 +7,8 @@ import {
   ClipboardCheck, 
   BarChart4, 
   FileText,
-  Users
+  Users,
+  ShieldCheck
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -32,6 +33,7 @@ const Sidebar: React.FC = () => {
         <div className="flex flex-col h-0 flex-1 bg-indigo-700 dark:bg-indigo-900">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
+              <ShieldCheck className="h-8 w-8 text-white mr-2" />
               <span className="text-white text-xl font-bold">IT Audit System</span>
             </div>
             <nav className="mt-8 flex-1 px-2 space-y-1">
