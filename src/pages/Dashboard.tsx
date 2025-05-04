@@ -14,12 +14,20 @@ const Dashboard: React.FC = () => {
     { name: 'Improvement Areas', value: '42', icon: BarChart4, color: 'bg-yellow-500 dark:bg-yellow-600', link: '/analytics' },
   ];
 
-  const recentAudits = [
+  const allAudits = [
     { id: '1', company: 'Acme Inc.', status: 'In Progress', date: '2025-02-15', completion: 65 },
     { id: '2', company: 'TechCorp', status: 'In Progress', date: '2025-02-10', completion: 30 },
     { id: '3', company: 'Global Systems', status: 'Completed', date: '2025-01-28', completion: 100 },
     { id: '4', company: 'Innovate Solutions', status: 'Completed', date: '2025-01-15', completion: 100 },
   ];
+
+  // Filter audits for participants
+  const recentAudits = user?.role === 'participant'
+    ? allAudits.filter(audit => 
+        audit.company === user.organization && 
+        (audit.status === 'In Progress' || audit.status === 'Completed')
+      )
+    : allAudits;
 
   return (
     <div className="space-y-6">
@@ -27,34 +35,39 @@ const Dashboard: React.FC = () => {
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Welcome back, {user?.name}!
+          {user?.role === 'participant' && user?.organization && (
+            <span className="ml-1">({user.organization})</span>
+          )}
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Link
-            key={stat.name}
-            to={stat.link}
-            className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
-          >
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className={`flex-shrink-0 rounded-md p-3 ${stat.color}`}>
-                  <stat.icon className="h-6 w-6 text-white" aria-hidden="true" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{stat.name}</dt>
-                    <dd>
-                      <div className="text-lg font-medium text-gray-900 dark:text-white">{stat.value}</div>
-                    </dd>
-                  </dl>
+        {stats
+          .filter(stat => user?.role === 'participant' ? !['Total Companies'].includes(stat.name) : true)
+          .map((stat) => (
+            <Link
+              key={stat.name}
+              to={stat.link}
+              className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
+            >
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className={`flex-shrink-0 rounded-md p-3 ${stat.color}`}>
+                    <stat.icon className="h-6 w-6 text-white" aria-hidden="true" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{stat.name}</dt>
+                      <dd>
+                        <div className="text-lg font-medium text-gray-900 dark:text-white">{stat.value}</div>
+                      </dd>
+                    </dl>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
       </div>
 
       {/* Recent Audits */}
@@ -119,6 +132,11 @@ const Dashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {recentAudits.length === 0 && (
+          <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+            No recent audits found.
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -128,33 +146,37 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="px-4 py-5 sm:p-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Link
-              to="/audits/new"
-              className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-            >
-              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                <ClipboardCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Start New Audit</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Create a new audit for a company</p>
-              </div>
-            </Link>
+            {user?.role !== 'participant' && (
+              <>
+                <Link
+                  to="/audits/new"
+                  className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                >
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                    <ClipboardCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="absolute inset-0" aria-hidden="true" />
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Start New Audit</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Create a new audit for a company</p>
+                  </div>
+                </Link>
 
-            <Link
-              to="/companies"
-              className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-            >
-              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Add Company</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Register a new company for audits</p>
-              </div>
-            </Link>
+                <Link
+                  to="/companies"
+                  className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                >
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                    <Building2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="absolute inset-0" aria-hidden="true" />
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Add Company</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Register a new company for audits</p>
+                  </div>
+                </Link>
+              </>
+            )}
 
             <Link
               to="/reports"
@@ -165,8 +187,8 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Generate Report</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Create a PDF report from audit data</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">View Reports</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Access audit reports and findings</p>
               </div>
             </Link>
           </div>

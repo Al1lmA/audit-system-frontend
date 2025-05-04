@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
-import { ClipboardCheck, Plus, Search, FileText, Eye, ArrowUpDown, Calendar } from 'lucide-react';
+import { ClipboardCheck, Plus, Search, Eye, ArrowUpDown, Calendar } from 'lucide-react';
 
 interface Audit {
   id: string;
@@ -174,7 +174,7 @@ const Audits: React.FC = () => {
               <option value="all">All Statuses</option>
               <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
-              <option value="Planned">Planned</option>
+              {user?.role !== 'participant' && <option value="Planned">Planned</option>}
             </select>
           </div>
           <div className="flex items-center space-x-2">
@@ -270,6 +270,7 @@ const Audits: React.FC = () => {
                           </Link>
                         </div>
                       </div>
+                    
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -312,11 +313,6 @@ const Audits: React.FC = () => {
                       <Link to={`/audits/${audit.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                         <Eye className="h-5 w-5" />
                       </Link>
-                      {audit.status === 'Completed' && (
-                        <Link to={`/reports/${audit.id}`} className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">
-                          <FileText className="h-5 w-5" />
-                        </Link>
-                      )}
                     </div>
                   </td>
                 </tr>
