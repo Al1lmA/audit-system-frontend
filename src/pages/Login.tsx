@@ -30,7 +30,8 @@ const Login: React.FC = () => {
         id: '2',
         name: 'Jane Participant',
         email: data.email,
-        role: 'participant'
+        role: 'participant',
+        organization: 'Acme Inc.'
       });
       navigate('/dashboard');
     } else if (data.email === 'admin@example.com' && data.password === 'password') {

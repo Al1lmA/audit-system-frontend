@@ -5,6 +5,8 @@ import { User, Mail, Building2 } from 'lucide-react';
 const Profile: React.FC = () => {
   const { user } = useUser();
 
+  console.log('user:', user, 'organization:');
+
   return (
     <div className="max-w-3xl mx-auto py-6">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Profile</h1>
