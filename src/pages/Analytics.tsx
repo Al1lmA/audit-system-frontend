@@ -14,7 +14,7 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { ArrowUpDown, Filter, Building2, ClipboardCheck, Search, Upload, FileSpreadsheet, X } from 'lucide-react';
+import { ArrowUpDown, Filter, Building2, ClipboardCheck, Search, Upload, FileSpreadsheet, X, Download } from 'lucide-react';
 
 interface FilterTarget {
   type: 'company' | 'audit';
@@ -117,6 +117,21 @@ const Analytics: React.FC = () => {
     }
   };
 
+  const handleGenerateReport = () => {
+    // In a real application, this would generate a PDF report with the analytics data
+    console.log('Generating report for:', selectedTarget);
+    
+    // Mock PDF generation and download
+    // In a real app, you would generate a proper PDF on the server
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('Analytics Report'));
+    element.setAttribute('download', `analytics_report_${selectedTarget?.name.toLowerCase().replace(/\s+/g, '_')}.pdf`);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -147,16 +162,25 @@ const Analytics: React.FC = () => {
             {selectedTarget ? selectedTarget.name : 'Select Target'}
           </button>
           {selectedTarget && (
-            <select
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="month">Last Month</option>
-              <option value="quarter">Last Quarter</option>
-              <option value="year">Last Year</option>
-              <option value="all">All Time</option>
-            </select>
+            <>
+              <select
+                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value)}
+              >
+                <option value="month">Last Month</option>
+                <option value="quarter">Last Quarter</option>
+                <option value="year">Last Year</option>
+                <option value="all">All Time</option>
+              </select>
+              <button
+                onClick={handleGenerateReport}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Generate Report
+              </button>
+            </>
           )}
         </div>
       </div>
