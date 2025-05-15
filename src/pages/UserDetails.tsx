@@ -1,31 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { User, Mail, Building2, Calendar, ArrowLeft } from 'lucide-react';
+import { fetchUser } from '../apiService';
 
 interface UserData {
   id: string;
-  name: string;
+  username: string;
   email: string;
   role: 'expert' | 'participant' | 'admin';
-  organization?: string;
-  status: 'active' | 'inactive';
-  lastLogin: string;
-  createdAt: string;
+  organization?: string | null;
+  last_login: string | null;
+  date_joined: string;
 }
 
 const UserDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [error, setError] = useState<string>('');
 
-  // Mock user data - in a real app, this would be fetched from an API
-  const user: UserData = {
-    id: '1',
-    name: 'John Expert',
-    email: 'john@example.com',
-    role: 'expert',
-    status: 'active',
-    lastLogin: '2025-02-20',
-    createdAt: '2024-01-01'
-  };
+  useEffect(() => {
+    if (id) {
+      fetchUser(id)
+        .then(setUser)
+        .catch((e) => setError(e.message));
+    }
+  }, [id]);
+
+  if (error) return <div className="text-red-600">Ошибка: {error}</div>;
+  if (!user) return <div>Загрузка...</div>;
 
   return (
     <div className="space-y-6">
@@ -34,7 +36,7 @@ const UserDetails: React.FC = () => {
           <Link to="/users" className="mr-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{user.name}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{user.username}</h1>
         </div>
       </div>
 
@@ -58,7 +60,7 @@ const UserDetails: React.FC = () => {
           <dl>
             <div className="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Full name</dt>
-              <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{user.name}</dd>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{user.username}</dd>
             </div>
             <div className="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email address</dt>
@@ -82,30 +84,18 @@ const UserDetails: React.FC = () => {
                 </dd>
               </div>
             )}
-            <div className="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
-              <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  user.status === 'active' 
-                    ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
-                    : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                }`}>
-                  {user.status}
-                </span>
-              </dd>
-            </div>
             <div className="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Last login</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 flex items-center">
                 <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                {user.lastLogin}
+                {user.last_login ? user.last_login : '-'}
               </dd>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Account created</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 flex items-center">
                 <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                {user.createdAt}
+                {user.date_joined}
               </dd>
             </div>
           </dl>

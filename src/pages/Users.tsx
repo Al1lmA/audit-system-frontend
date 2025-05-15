@@ -10,10 +10,8 @@ interface User {
   email: string;
   role: 'expert' | 'participant' | 'admin';
   organization?: string;
-  status: 'active' | 'inactive';
   lastLogin: string;
 }
-
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -26,7 +24,6 @@ const Users: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Загрузка пользователей с бэка
   const loadUsers = async () => {
     setLoading(true);
     setError(null);
@@ -72,7 +69,6 @@ const Users: React.FC = () => {
      (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())) &&
     (roleFilter === 'all' || user.role === roleFilter)
   );
-  
 
   const handleAddUser = () => {
     setEditingUser(null);
@@ -99,7 +95,7 @@ const Users: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (data: Omit<User, 'id' | 'status' | 'lastLogin'>) => {
+  const handleSubmit = async (data: Omit<User, 'id' | 'lastLogin'>) => {
     setLoading(true);
     setError(null);
     try {
@@ -136,7 +132,6 @@ const Users: React.FC = () => {
         </button>
       </div>
 
-      {/* Search and filters */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
           <div className="relative flex-grow">
@@ -166,7 +161,6 @@ const Users: React.FC = () => {
         </div>
       </div>
 
-      {/* Users list */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         {loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
@@ -202,15 +196,6 @@ const Users: React.FC = () => {
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Organization
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button
-                    className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
-                    onClick={() => handleSort('status')}
-                  >
-                    <span>Status</span>
-                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'status' ? 'text-indigo-500' : ''}`} />
-                  </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button
@@ -254,15 +239,6 @@ const Users: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {user.organization || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === 'active'
-                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                        : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                    }`}>
-                      {user.status}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {user.lastLogin}
                   </td>
@@ -294,7 +270,6 @@ const Users: React.FC = () => {
         )}
       </div>
 
-      {/* Add the modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">

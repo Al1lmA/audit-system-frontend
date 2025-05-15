@@ -182,3 +182,12 @@ export async function getCSRFToken() {
     }
     return true;
   }
+
+  export async function fetchUser(id) {
+    const res = await fetch(`${API_URL}users/${id}/`, {
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Ошибка загрузки пользователя');
+    return await res.json();
+  }
+  

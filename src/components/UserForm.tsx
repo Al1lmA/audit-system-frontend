@@ -25,7 +25,6 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
   const password = watch('password');
   const role = watch('role');
 
-  // Mock companies for organization selection
   const companies = [
     { id: '1', name: 'Acme Inc.' },
     { id: '2', name: 'TechCorp' },
@@ -37,12 +36,12 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="grid grid-cols-1 gap-6">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Full Name
             </label>
             <input
               type="text"
-              id="name"
+              id="username"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('username', { required: 'Full name is required' })}
             />
