@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, Plus, Search, Edit, Trash2, ArrowUpDown } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import CompanyForm from '../components/CompanyForm';
+import { fetchCompanies, createCompany, updateCompany, deleteCompany } from '../apiService';
 
 interface Company {
   id: string;
@@ -19,56 +20,34 @@ interface Company {
 }
 
 const Companies: React.FC = () => {
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<keyof Company>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useUser();
   const isAdmin = user?.role === 'admin';
-  
-  // Mock data
-  const mockCompanies: Company[] = [
-    {
-      id: '1',
-      name: 'Acme Inc.',
-      industry: 'Manufacturing',
-      size: 'Large',
-      location: 'New York, USA',
-      contactPerson: 'John Smith',
-      email: 'john@acme.com',
-      lastAudit: '2025-01-15',
-      phone: '+1 234 567 8900',
-      address: '123 Main St, New York, NY 10001',
-      description: 'Leading manufacturer of industrial equipment'
-    },
-    {
-      id: '2',
-      name: 'TechCorp',
-      industry: 'Technology',
-      size: 'Medium',
-      location: 'San Francisco, USA',
-      contactPerson: 'Jane Doe',
-      email: 'jane@techcorp.com',
-      lastAudit: '2025-02-20',
-      phone: '+1 234 567 8901',
-      address: '456 Tech Ave, San Francisco, CA 94105',
-      description: 'Innovative software solutions provider'
-    },
-    {
-      id: '3',
-      name: 'Global Systems',
-      industry: 'IT Services',
-      size: 'Large',
-      location: 'London, UK',
-      contactPerson: 'Mike Johnson',
-      email: 'mike@globalsys.com',
-      lastAudit: '2025-03-10',
-      phone: '+44 20 7123 4567',
-      address: '789 Tech Lane, London, UK EC1A 1BB',
-      description: 'Global IT services and consulting'
+
+  // Загрузка компаний с API
+  const loadCompanies = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchCompanies();
+      setCompanies(data);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка загрузки компаний');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    loadCompanies();
+  }, []);
 
   const handleSort = (field: keyof Company) => {
     if (field === sortField) {
@@ -78,6 +57,29 @@ const Companies: React.FC = () => {
       setSortDirection('asc');
     }
   };
+
+  const sortedAndFilteredCompanies = companies
+    .filter(company =>
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.location.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+
+      if (aValue === null && bValue === null) return 0;
+      if (aValue === null) return sortDirection === 'asc' ? 1 : -1;
+      if (bValue === null) return sortDirection === 'asc' ? -1 : 1;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return 0;
+    });
 
   const handleAddCompany = () => {
     setEditingCompany(null);
@@ -89,40 +91,39 @@ const Companies: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleSubmit = (data: Omit<Company, 'id' | 'lastAudit'>) => {
-    if (editingCompany) {
-      // Update existing company
-      console.log('Updating company:', { ...editingCompany, ...data });
-    } else {
-      // Add new company
-      console.log('Adding new company:', data);
+  const handleDeleteCompany = async (companyId: string) => {
+    if (window.confirm('Are you sure you want to delete this company?')) {
+      setLoading(true);
+      setError(null);
+      try {
+        await deleteCompany(companyId);
+        await loadCompanies();
+      } catch (err: any) {
+        setError(err.message || 'Ошибка удаления компании');
+      } finally {
+        setLoading(false);
+      }
     }
-    setShowModal(false);
-    setEditingCompany(null);
   };
 
-  const sortedAndFilteredCompanies = mockCompanies
-    .filter(company => 
-      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.location.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-      
-      if (aValue === null && bValue === null) return 0;
-      if (aValue === null) return sortDirection === 'asc' ? 1 : -1;
-      if (bValue === null) return sortDirection === 'asc' ? -1 : 1;
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc' 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
+  const handleSubmit = async (data: Omit<Company, 'id' | 'lastAudit'>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (editingCompany) {
+        await updateCompany(editingCompany.id, data);
+      } else {
+        await createCompany(data);
       }
-      
-      return 0;
-    });
+      await loadCompanies();
+      setShowModal(false);
+      setEditingCompany(null);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка сохранения компании');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -169,7 +170,7 @@ const Companies: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('name')}
                   >
@@ -178,7 +179,7 @@ const Companies: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('industry')}
                   >
@@ -187,7 +188,7 @@ const Companies: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('size')}
                   >
@@ -196,7 +197,7 @@ const Companies: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('location')}
                   >
@@ -205,7 +206,7 @@ const Companies: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('lastAudit')}
                   >
@@ -235,7 +236,7 @@ const Companies: React.FC = () => {
                           </Link>
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {company.contactPerson} • {company.email}
+                          {company.contactPerson} &middot; {company.email}
                         </div>
                       </div>
                     </div>
@@ -263,12 +264,7 @@ const Companies: React.FC = () => {
                         </button>
                         <button
                           className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                          onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this company?')) {
-                              // Delete company logic would go here
-                              console.log('Delete company:', company.id);
-                            }
-                          }}
+                          onClick={() => handleDeleteCompany(company.id)}
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
@@ -280,14 +276,14 @@ const Companies: React.FC = () => {
             </tbody>
           </table>
         </div>
-        {sortedAndFilteredCompanies.length === 0 && (
+        {sortedAndFilteredCompanies.length === 0 && !loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
             No companies found matching your search criteria.
           </div>
         )}
       </div>
 
-      {/* Add the modal */}
+      {/* Модальное окно для добавления/редактирования компании */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">

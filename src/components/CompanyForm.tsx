@@ -6,7 +6,7 @@ interface CompanyFormData {
   industry: string;
   size: string;
   location: string;
-  contactPerson: string;
+  contact_person: string;
   email: string;
   phone: string;
   address: string;
@@ -36,12 +36,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <input
               type="text"
               id="name"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('name', { required: 'Company name is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
           </div>
 
           <div>
@@ -51,12 +49,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <input
               type="text"
               id="industry"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('industry', { required: 'Industry is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.industry && (
-              <p className="mt-1 text-sm text-red-600">{errors.industry.message}</p>
-            )}
+            {errors.industry && <p className="mt-1 text-sm text-red-600">{errors.industry.message}</p>}
           </div>
 
           <div>
@@ -65,8 +61,8 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             </label>
             <select
               id="size"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('size', { required: 'Company size is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             >
               <option value="">Select size</option>
               <option value="Small">Small (1-50 employees)</option>
@@ -74,9 +70,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
               <option value="Large">Large (251-1000 employees)</option>
               <option value="Enterprise">Enterprise (1000+ employees)</option>
             </select>
-            {errors.size && (
-              <p className="mt-1 text-sm text-red-600">{errors.size.message}</p>
-            )}
+            {errors.size && <p className="mt-1 text-sm text-red-600">{errors.size.message}</p>}
           </div>
 
           <div>
@@ -86,27 +80,23 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <input
               type="text"
               id="location"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('location', { required: 'Location is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.location && (
-              <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
-            )}
+            {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="contact_person" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Contact Person
             </label>
             <input
               type="text"
-              id="contactPerson"
+              id="contact_person"
+              {...register('contact_person', { required: 'Contact person is required' })}
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              {...register('contactPerson', { required: 'Contact person is required' })}
             />
-            {errors.contactPerson && (
-              <p className="mt-1 text-sm text-red-600">{errors.contactPerson.message}</p>
-            )}
+            {errors.contact_person && <p className="mt-1 text-sm text-red-600">{errors.contact_person.message}</p>}
           </div>
 
           <div>
@@ -116,18 +106,16 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <input
               type="email"
               id="email"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              {...register('email', { 
+              {...register('email', {
                 required: 'Email is required',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: 'Invalid email address'
                 }
               })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
           </div>
 
           <div>
@@ -137,12 +125,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <input
               type="tel"
               id="phone"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('phone', { required: 'Phone number is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.phone && (
-              <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-            )}
+            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
           </div>
 
           <div>
@@ -152,12 +138,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <input
               type="text"
               id="address"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('address', { required: 'Address is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.address && (
-              <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
-            )}
+            {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>}
           </div>
 
           <div>
@@ -167,12 +151,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ onSubmit, onCancel, initialDa
             <textarea
               id="description"
               rows={4}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('description', { required: 'Description is required' })}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
-            {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-            )}
+            {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { fetchCompanies } from '../apiService'; // Импортируй свою функцию
 
 interface UserFormData {
   username: string;
@@ -10,6 +11,11 @@ interface UserFormData {
   confirmPassword?: string;
 }
 
+interface Company {
+  id: string;
+  name: string;
+}
+
 interface UserFormProps {
   onSubmit: (data: UserFormData) => void;
   onCancel: () => void;
@@ -17,19 +23,39 @@ interface UserFormProps {
   isEdit?: boolean;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, isEdit = false }) => {
+const UserForm: React.FC<UserFormProps> = ({
+  onSubmit,
+  onCancel,
+  initialData,
+  isEdit = false,
+}) => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<UserFormData>({
-    defaultValues: initialData
+    defaultValues: initialData,
   });
+
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [companiesError, setCompaniesError] = useState<string | null>(null);
 
   const password = watch('password');
   const role = watch('role');
 
-  const companies = [
-    { id: '1', name: 'Acme Inc.' },
-    { id: '2', name: 'TechCorp' },
-    { id: '3', name: 'Global Systems' },
-  ];
+  // Загрузка компаний с бэка
+  useEffect(() => {
+    const loadCompanies = async () => {
+      setLoadingCompanies(true);
+      setCompaniesError(null);
+      try {
+        const data = await fetchCompanies();
+        setCompanies(data);
+      } catch (err: any) {
+        setCompaniesError(err.message || 'Ошибка загрузки компаний');
+      } finally {
+        setLoadingCompanies(false);
+      }
+    };
+    loadCompanies();
+  }, []);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -58,12 +84,12 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
               type="email"
               id="email"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              {...register('email', { 
+              {...register('email', {
                 required: 'Email is required',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address'
-                }
+                  message: 'Invalid email address',
+                },
               })}
             />
             {errors.email && (
@@ -95,20 +121,26 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
               <label htmlFor="organization" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Organization
               </label>
-              <select
-                id="organization"
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                {...register('organization', { 
-                  required: role === 'participant' ? 'Organization is required for participants' : false
-                })}
-              >
-                <option value="">Select organization</option>
-                {companies.map(company => (
-                  <option key={company.id} value={company.name}>
-                    {company.name}
-                  </option>
-                ))}
-              </select>
+              {loadingCompanies ? (
+                <div className="text-sm text-gray-500">Loading companies...</div>
+              ) : companiesError ? (
+                <div className="text-sm text-red-600">{companiesError}</div>
+              ) : (
+                <select
+                  id="organization"
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  {...register('organization', {
+                    required: role === 'participant' ? 'Organization is required for participants' : false,
+                  })}
+                >
+                  <option value="">Select organization</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              )}
               {errors.organization && (
                 <p className="mt-1 text-sm text-red-600">{errors.organization.message}</p>
               )}
@@ -125,12 +157,12 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
                   type="password"
                   id="password"
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  {...register('password', { 
+                  {...register('password', {
                     required: !isEdit ? 'Password is required' : false,
                     minLength: {
                       value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
+                      message: 'Password must be at least 6 characters',
+                    },
                   })}
                 />
                 {errors.password && (
@@ -146,9 +178,10 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
                   type="password"
                   id="confirmPassword"
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  {...register('confirmPassword', { 
+                  {...register('confirmPassword', {
                     required: !isEdit ? 'Please confirm your password' : false,
-                    validate: value => !value || !password || value === password || 'Passwords do not match'
+                    validate: (value) =>
+                      !value || !password || value === password || 'Passwords do not match',
                   })}
                 />
                 {errors.confirmPassword && (

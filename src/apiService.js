@@ -191,3 +191,54 @@ export async function getCSRFToken() {
     return await res.json();
   }
   
+  export async function fetchCompanies() {
+    const res = await fetch(`${API_URL}companies/`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Ошибка загрузки компаний');
+    return await res.json();
+  }
+
+  export async function createCompany(data) {
+    const res = await fetch(`${API_URL}companies/`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken, 
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Ошибка создания компании');
+    return await res.json();
+  }
+  
+  export async function updateCompany(id, data) {
+    const res = await fetch(`${API_URL}companies/${id}/`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken, 
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Ошибка обновления компании');
+    return await res.json();
+  }
+  
+  export async function deleteCompany(id) {
+    const res = await fetch(`${API_URL}companies/${id}/`, {
+      method: 'DELETE',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken, 
+      },
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Ошибка удаления компании');
+  }
+
+  export async function fetchCompany(id) {
+    const res = await fetch(`${API_URL}companies/${id}/`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Ошибка загрузки компании');
+    return await res.json();
+  }
