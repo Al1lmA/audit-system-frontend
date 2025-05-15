@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users as UsersIcon, Plus, Search, Edit, Trash2, ArrowUpDown } from 'lucide-react';
 import UserForm from '../components/UserForm';
+import { getUsers, createUser, updateUser, deleteUser } from '../apiService';
 
 interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
   role: 'expert' | 'participant' | 'admin';
   organization?: string;
@@ -13,42 +14,35 @@ interface User {
   lastLogin: string;
 }
 
+
 const Users: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [sortField, setSortField] = useState<keyof User>('name');
+  const [sortField, setSortField] = useState<keyof User>('username');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data
-  const mockUsers: User[] = [
-    {
-      id: '1',
-      name: 'John Expert',
-      email: 'john@example.com',
-      role: 'expert',
-      status: 'active',
-      lastLogin: '2025-02-20'
-    },
-    {
-      id: '2',
-      name: 'Jane Participant',
-      email: 'jane@example.com',
-      role: 'participant',
-      organization: 'Acme Inc.',
-      status: 'active',
-      lastLogin: '2025-02-19'
-    },
-    {
-      id: '3',
-      name: 'Admin User',
-      email: 'admin@example.com',
-      role: 'admin',
-      status: 'active',
-      lastLogin: '2025-02-21'
+  // Загрузка пользователей с бэка
+  const loadUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка загрузки');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const handleSort = (field: keyof User) => {
     if (field === sortField) {
@@ -59,28 +53,26 @@ const Users: React.FC = () => {
     }
   };
 
-  const filteredUsers = mockUsers
-    .filter(user =>
-      (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (roleFilter === 'all' || user.role === roleFilter)
-    )
-    .sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-      
-      if (aValue === null && bValue === null) return 0;
-      if (aValue === null) return sortDirection === 'asc' ? 1 : -1;
-      if (bValue === null) return sortDirection === 'asc' ? -1 : 1;
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc' 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-      
-      return 0;
-    });
+  const sortedUsers = [...users].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    if (aValue === null && bValue === null) return 0;
+    if (aValue === null) return sortDirection === 'asc' ? 1 : -1;
+    if (bValue === null) return sortDirection === 'asc' ? -1 : 1;
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc'
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    return 0;
+  });
+
+  const filteredUsers = sortedUsers.filter(user =>
+    ((user.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+     (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (roleFilter === 'all' || user.role === roleFilter)
+  );
+  
 
   const handleAddUser = () => {
     setEditingUser(null);
@@ -92,23 +84,38 @@ const Users: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      // Delete user logic would go here
-      console.log('Delete user:', userId);
+      setLoading(true);
+      setError(null);
+      try {
+        await deleteUser(userId);
+        await loadUsers();
+      } catch (err: any) {
+        setError(err.message || 'Ошибка удаления');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleSubmit = (data: Omit<User, 'id' | 'status' | 'lastLogin'>) => {
-    if (editingUser) {
-      // Update existing user
-      console.log('Updating user:', { ...editingUser, ...data });
-    } else {
-      // Add new user
-      console.log('Adding new user:', data);
+  const handleSubmit = async (data: Omit<User, 'id' | 'status' | 'lastLogin'>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (editingUser) {
+        await updateUser(editingUser.id, data);
+      } else {
+        await createUser(data);
+      }
+      await loadUsers();
+      setShowModal(false);
+      setEditingUser(null);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка сохранения');
+    } finally {
+      setLoading(false);
     }
-    setShowModal(false);
-    setEditingUser(null);
   };
 
   return (
@@ -161,21 +168,31 @@ const Users: React.FC = () => {
 
       {/* Users list */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+        {loading && (
+          <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+            Loading...
+          </div>
+        )}
+        {error && (
+          <div className="px-6 py-4 text-center text-red-500 dark:text-red-400">
+            {error}
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
-                    onClick={() => handleSort('name')}
+                    onClick={() => handleSort('username')}
                   >
                     <span>User</span>
-                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
+                    <ArrowUpDown className={`h-4 w-4 ${sortField === 'username' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('role')}
                   >
@@ -187,7 +204,7 @@ const Users: React.FC = () => {
                   Organization
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('status')}
                   >
@@ -196,7 +213,7 @@ const Users: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('lastLogin')}
                   >
@@ -220,7 +237,7 @@ const Users: React.FC = () => {
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
                           <Link to={`/users/${user.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                            {user.name}
+                            {user.username}
                           </Link>
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -239,8 +256,8 @@ const Users: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === 'active' 
-                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                      user.status === 'active'
+                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                         : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                     }`}>
                       {user.status}
@@ -285,12 +302,10 @@ const Users: React.FC = () => {
               {editingUser ? 'Edit User' : 'Add New User'}
             </h2>
             <UserForm
-              onSubmit={handleSubmit}
-              onCancel={() => {
-                setShowModal(false);
-                setEditingUser(null);
-              }}
               initialData={editingUser || undefined}
+              onSubmit={handleSubmit}
+              onCancel={() => { setShowModal(false); setEditingUser(null); }}
+              loading={loading}
               isEdit={!!editingUser}
             />
           </div>

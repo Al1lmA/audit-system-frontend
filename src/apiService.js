@@ -1,0 +1,184 @@
+import { API_URL } from './api';
+import { getCookie } from './utils/csrf';
+
+const csrfToken = getCookie('csrftoken');
+
+// // Получить всех пользователей
+// export async function getUsers() {
+//   const res = await fetch(`${API_URL}users/`, { credentials: 'include' });
+//   if (!res.ok) throw new Error('Ошибка загрузки пользователей');
+//   return await res.json();
+// }
+
+// // Создать пользователя
+// export async function createUser(user) {
+//   const body = {
+//     ...user,
+//     // Если пароль пустой, не отправляем его (например, при редактировании)
+//     ...(user.password ? { password: user.password } : {}),
+//   };
+//   const res = await fetch(`${API_URL}users/`, {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     credentials: 'include',
+//     body: JSON.stringify(body),
+//   });
+//   if (!res.ok) throw new Error('Ошибка создания пользователя');
+//   return await res.json();
+// }
+
+// // Обновить пользователя
+// export async function updateUser(userId, user) {
+//   const body = {
+//     ...user,
+//     ...(user.password ? { password: user.password } : {}),
+//   };
+//   const res = await fetch(`${API_URL}users/${userId}/`, {
+//     method: 'PUT',
+//     headers: { 'Content-Type': 'application/json' },
+//     credentials: 'include',
+//     body: JSON.stringify(body),
+//   });
+//   if (!res.ok) throw new Error('Ошибка обновления пользователя');
+//   return await res.json();
+// }
+
+// // Удалить пользователя
+// export async function deleteUser(userId) {
+//   const res = await fetch(`${API_URL}users/${userId}/`, {
+//     method: 'DELETE',
+//     credentials: 'include',
+//   });
+//   if (!res.ok) throw new Error('Ошибка удаления пользователя');
+//   return true;
+// }
+
+// // Получить список компаний для выбора организации
+// export async function getCompanies() {
+//   const res = await fetch(`${API_URL}companies/`, { credentials: 'include' });
+//   if (!res.ok) throw new Error('Ошибка загрузки компаний');
+//   return await res.json();
+// }
+
+// // Логин пользователя (Django стандартный endpoint)
+// export async function loginUser({ email, password }) {
+//     // Если у тебя username = email, то всё ок. Если нет - нужно поле username.
+//     const res = await fetch(`${API_URL}users/login/`, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//       body: JSON.stringify({ email, password }),
+//     });
+//     if (res.ok) {
+//       return await res.json();
+//     } else {
+//       const data = await res.json().catch(() => ({}));
+//       throw new Error(data.detail || data.non_field_errors?.[0] || 'Ошибка входа');
+//     }
+//   }
+
+export async function getCSRFToken() {
+    const res = await fetch(`${API_URL}csrf/`, {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    return data.csrfToken;
+  }
+  
+  // function getCookie(name) {
+  //   let cookieValue = null;
+  //   if (document.cookie && document.cookie !== '') {
+  //     const cookies = document.cookie.split(';');
+  //     for (let i = 0; i < cookies.length; i++) {
+  //       const cookie = cookies[i].trim();
+  //       if (cookie.substring(0, name.length + 1) === (name + '=')) {
+  //         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+  //         break;
+  //       }
+  //     }
+  //   }
+  //   return cookieValue;
+  // }
+  
+  export async function loginUser({ email, password }) {
+    let csrfToken = getCookie('csrftoken');
+    if (!csrfToken) {
+      csrfToken = await getCSRFToken();
+    }
+  
+    const res = await fetch(`${API_URL}users/login/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ email, password }),
+    });
+  
+    if (res.ok) {
+      return await res.json();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Ошибка авторизации');
+    }
+  }
+
+  export async function getUsers() {
+    const res = await fetch(`${API_URL}users/`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Ошибка загрузки пользователей');
+    return await res.json();
+  }
+  
+  export async function createUser(user) {
+    const csrfToken = getCookie('csrftoken');
+    const res = await fetch(`${API_URL}users/`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken, 
+      },
+      credentials: 'include',
+      body: JSON.stringify(user),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Ошибка создания пользователя');
+    }
+    return await res.json();
+  }
+  
+  export async function updateUser(userId, user) {
+    const csrfToken = getCookie('csrftoken');
+    const res = await fetch(`${API_URL}users/${userId}/`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken, 
+      },
+      credentials: 'include',
+      body: JSON.stringify(user),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Ошибка обновления пользователя');
+    }
+    return await res.json();
+  }
+  
+  export async function deleteUser(userId) {
+    const csrfToken = getCookie('csrftoken');
+    const res = await fetch(`${API_URL}users/${userId}/`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Ошибка удаления пользователя');
+    }
+    return true;
+  }

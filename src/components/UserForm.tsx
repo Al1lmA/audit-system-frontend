@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 
 interface UserFormData {
-  name: string;
+  username: string;
   email: string;
   role: 'expert' | 'participant' | 'admin';
   organization?: string;
@@ -44,10 +44,10 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, onCancel, initialData, is
               type="text"
               id="name"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              {...register('name', { required: 'Full name is required' })}
+              {...register('username', { required: 'Full name is required' })}
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+            {errors.username && (
+              <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
             )}
           </div>
 

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useForm } from 'react-hook-form';
 import { ClipboardCheck } from 'lucide-react';
+import { loginUser } from '../apiService';
 
 interface LoginFormData {
   email: string;
@@ -13,37 +14,20 @@ const Login: React.FC = () => {
   const { login } = useUser();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
 
-  const onSubmit = (data: LoginFormData) => {
-    // Mock login - in a real app, this would be an API call
-    if (data.email === 'expert@example.com' && data.password === 'password') {
-      login({
-        id: '1',
-        name: 'John Expert',
-        email: data.email,
-        role: 'expert'
-      });
+  const onSubmit = async (data: LoginFormData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const user = await loginUser(data);
+      login(user);
       navigate('/dashboard');
-    } else if (data.email === 'participant@example.com' && data.password === 'password') {
-      login({
-        id: '2',
-        name: 'Jane Participant',
-        email: data.email,
-        role: 'participant',
-        organization: 'Acme Inc.'
-      });
-      navigate('/dashboard');
-    } else if (data.email === 'admin@example.com' && data.password === 'password') {
-      login({
-        id: '3',
-        name: 'Admin User',
-        email: data.email,
-        role: 'admin'
-      });
-      navigate('/dashboard');
-    } else {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      setError(err.message || 'Ошибка авторизации');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,6 +67,7 @@ const Login: React.FC = () => {
                     message: 'Invalid email address'
                   }
                 })}
+                disabled={loading}
               />
               {errors.email && (
                 <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.email.message}</p>
@@ -99,6 +84,7 @@ const Login: React.FC = () => {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700"
                 placeholder="Password"
                 {...register('password', { required: 'Password is required' })}
+                disabled={loading}
               />
               {errors.password && (
                 <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.password.message}</p>
@@ -110,27 +96,13 @@ const Login: React.FC = () => {
             <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>
           )}
 
-          <div className="text-sm text-center">
-            <p className="font-medium text-indigo-600 dark:text-indigo-400">
-              Demo accounts:
-            </p>
-            <p className="text-gray-500 dark:text-gray-400">
-              expert@example.com / password
-            </p>
-            <p className="text-gray-500 dark:text-gray-400">
-              participant@example.com / password
-            </p>
-            <p className="text-gray-500 dark:text-gray-400">
-              admin@example.com / password
-            </p>
-          </div>
-
           <div>
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={loading}
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
