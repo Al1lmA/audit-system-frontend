@@ -182,6 +182,24 @@ export async function getCSRFToken() {
     }
     return await res.json();
   }
+
+  export async function changeUserPassword(userId, data) {
+    const csrfToken = getCookie('csrftoken');
+    const res = await fetch(`${API_URL}users/${userId}/change_password/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Ошибка смены пароля');
+    }
+    return await res.json();
+  }
   
   export async function deleteUser(userId) {
     const csrfToken = getCookie('csrftoken');

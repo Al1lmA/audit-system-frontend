@@ -2,16 +2,19 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 
 interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
   role: 'expert' | 'participant' | 'admin';
-  organization?: string;
+  organization?: string | null;
+  last_login?: string;
+  phone?: string; // <-- Добавляем поле телефона
 }
 
 interface UserContextType {
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
   isAuthenticated: boolean;
 }
 
@@ -22,7 +25,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -42,8 +44,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('user');
   };
 
+  const updateUser = (updatedData: Partial<User>) => {
+    if (!user) return;
+    
+    const updatedUser = { ...user, ...updatedData, phone: updatedData.phone ?? user.phone };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   return (
-    <UserContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <UserContext.Provider value={{ user, login, logout, updateUser, isAuthenticated }}>
       {children}
     </UserContext.Provider>
   );
