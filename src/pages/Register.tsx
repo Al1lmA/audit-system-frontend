@@ -1,9 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ClipboardCheck, Search } from 'lucide-react';
+import { fetchCompanies, registerUser } from '../apiService';
+import { getCookie } from '../utils/csrf';
 
-// Custom hook to detect clicks outside an element
+
+// Кастомный хук для закрытия дропдауна
 const useClickOutside = (ref: React.RefObject<HTMLElement>, callback: () => void) => {
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -11,7 +14,6 @@ const useClickOutside = (ref: React.RefObject<HTMLElement>, callback: () => void
         callback();
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -38,41 +40,82 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [companiesError, setCompaniesError] = useState<string | null>(null);
+
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<RegisterFormData>();
   const password = watch('password');
   const role = watch('role');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Use the custom hook to close dropdown when clicking outside
-  useClickOutside(dropdownRef, () => {
-    setShowCompanyDropdown(false);
-  });
+  useEffect(() => {
+    fetch('http://localhost:8000/api/csrf/', {
+      credentials: 'include'
+    });
+  }, []);
 
-  // Mock companies data
-  const companies: Company[] = [
-    { id: '1', name: 'Acme Inc.' },
-    { id: '2', name: 'TechCorp' },
-    { id: '3', name: 'Global Systems' },
-    { id: '4', name: 'Innovate Solutions' },
-    { id: '5', name: 'DataTech' },
-  ];
+  useClickOutside(dropdownRef, () => setShowCompanyDropdown(false));
+
+  // Загрузка компаний с бэка
+  useEffect(() => {
+    const loadCompanies = async () => {
+      setLoadingCompanies(true);
+      setCompaniesError(null);
+      try {
+        const data = await fetchCompanies();
+        setCompanies(data);
+      } catch (err: any) {
+        setCompaniesError(err.message || 'Ошибка загрузки компаний');
+      } finally {
+        setLoadingCompanies(false);
+      }
+    };
+    loadCompanies();
+  }, []);
 
   const filteredCompanies = companies.filter(company =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const onSubmit = (data: RegisterFormData) => {
-    // Ensure organization is required for participants
+  const onSubmit = async (data: RegisterFormData) => {
+    setError(null);
+  
     if (data.role === 'participant' && !data.organization) {
       setError('Organization is required for participants');
       return;
     }
+    if (data.password !== data.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    
+    const csrfToken = getCookie('csrftoken');
 
-    // In a real app, this would be an API call to register the user
-    console.log('Registration data:', data);
-    navigate('/login');
+    try {
+      const response = await fetch('http://localhost:8000/api/users/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json',  'X-CSRFToken': csrfToken,},
+        body: JSON.stringify({
+          username: data.name,
+          email: data.email,
+          password: data.password,
+          role: data.role,
+          organization: data.role === 'participant' ? data.organization : null,
+        }),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || 'Registration failed');
+      }
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+    }
   };
-
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -117,7 +160,7 @@ const Register: React.FC = () => {
                 autoComplete="email"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Email address"
-                {...register('email', { 
+                {...register('email', {
                   required: 'Email is required',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -138,7 +181,7 @@ const Register: React.FC = () => {
                 type="password"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Password"
-                {...register('password', { 
+                {...register('password', {
                   required: 'Password is required',
                   minLength: {
                     value: 6,
@@ -159,7 +202,7 @@ const Register: React.FC = () => {
                 type="password"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
                 placeholder="Confirm Password"
-                {...register('confirmPassword', { 
+                {...register('confirmPassword', {
                   required: 'Please confirm your password',
                   validate: value => value === password || 'Passwords do not match'
                 })}
@@ -223,28 +266,40 @@ const Register: React.FC = () => {
                     onFocus={() => setShowCompanyDropdown(true)}
                   />
                   {showCompanyDropdown && (
-                    <div 
+                    <div
                       ref={dropdownRef}
                       className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm"
                     >
-                      {filteredCompanies.map((company) => (
-                        <button
-                          key={company.id}
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
-                          onClick={() => {
-                            setValue('organization', company.name);
-                            setSearchTerm(company.name);
-                            setShowCompanyDropdown(false);
-                          }}
-                        >
-                          {company.name}
-                        </button>
-                      ))}
-                      {filteredCompanies.length === 0 && (
+                      {loadingCompanies ? (
                         <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                          No organizations found
+                          Loading companies...
                         </div>
+                      ) : companiesError ? (
+                        <div className="px-4 py-2 text-sm text-red-600 dark:text-red-400">
+                          {companiesError}
+                        </div>
+                      ) : (
+                        <>
+                          {filteredCompanies.map((company) => (
+                            <button
+                              key={company.id}
+                              type="button"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
+                              onClick={() => {
+                                setValue('organization', company.id);
+                                setSearchTerm(company.name);
+                                setShowCompanyDropdown(false);
+                              }}
+                            >
+                              {company.name}
+                            </button>
+                          ))}
+                          {filteredCompanies.length === 0 && (
+                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                              No organizations found
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -255,11 +310,9 @@ const Register: React.FC = () => {
               </div>
             )}
           </div>
-
           {error && (
             <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>
           )}
-
           <div>
             <button
               type="submit"

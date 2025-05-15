@@ -100,6 +100,23 @@ export async function getCSRFToken() {
   //   return cookieValue;
   // }
   
+  export async function registerUser(data) {
+    const res = await fetch(`${API_URL}users/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Registration failed');
+    }
+    return await res.json();
+  }
+
   export async function loginUser({ email, password }) {
     let csrfToken = getCookie('csrftoken');
     if (!csrfToken) {
