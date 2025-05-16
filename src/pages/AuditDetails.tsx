@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchAudit } from '../apiService';
 import { fetchAuditHistory } from '../apiService';
+import { fetchAuditInteractions, postInteraction, fetchCSRFToken } from '../apiService';
 import { useUser } from '../contexts/UserContext';
+import { useDropzone } from 'react-dropzone';
+import { getCSRFToken } from '../apiService'; 
 import {
   Building2,
   Calendar,
@@ -11,9 +14,13 @@ import {
   FileSpreadsheet,
   Download,
   History as HistoryIcon,
+  Send,
+  MessageSquare,
+  Paperclip,
 } from 'lucide-react';
 
 const AuditDetails: React.FC = () => {
+
   const { id } = useParams<{ id: string }>();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<'overview' | 'responses' | 'history' | 'results'>('overview');
@@ -27,6 +34,17 @@ const AuditDetails: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState(null);
+
+  // --- Только для responses ---
+  const [interactions, setInteractions] = useState<any[]>([]);
+  const [loadingResponses, setLoadingResponses] = useState(false);
+  const [errorResponses, setErrorResponses] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+
+
 
   const handleDownloadFile = async (fileUrl: string, fileName: string) => {
     try {
@@ -63,14 +81,186 @@ const AuditDetails: React.FC = () => {
       alert('Не удалось скачать файл');
     }
   };
+
+ 
+  const { getRootProps: getSupportingProps, getInputProps: getSupportingInputProps } = useDropzone({
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg'],
+      'application/pdf': ['.pdf'],
+      'application/zip': ['.zip'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+    },
+    multiple: true,
+    onDrop: (acceptedFiles) => {
+      setSelectedFiles(acceptedFiles);
+    }
+  });
   
   
+  // Функция загрузки взаимодействий
+  const loadInteractions = async () => {
+    setLoadingResponses(true);
+    try {
+      const response = await fetch(`/api/audits/${id}/timeline/`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Ошибка загрузки взаимодействий');
+      const data = await response.json();
+      setInteractions(data);
+    } catch (err) {
+      setErrorResponses(err.message);
+    } finally {
+      setLoadingResponses(false);
+    }
+  };
+
+
+  // Функция отправки ответа участника
+  const handleSubmitResponse = async () => {
+    setIsSubmitting(true);
+    try {
+      // Сначала получите CSRF-токен
+      await fetchCSRFToken();
+      const csrftoken = getCSRFToken();
+      
+      if (!csrftoken) {
+        throw new Error('CSRF токен не найден. Пожалуйста, перезагрузите страницу');
+      }
+
+      const formData = new FormData();
+      formData.append('audit', id);
+      formData.append('participant_comment', feedback);
+      
+      if (questionnaireFile) {
+        formData.append('questionnaire_file', questionnaireFile);
+      }
+      
+      selectedFiles.forEach((file, index) => {
+        formData.append(`files`, file);  // Имя поля должно совпадать с сериализатором
+      });
+
+      const response = await fetch('/api/interactions/add_comment/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken': csrftoken  // Правильно передаем токен
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Ошибка отправки');
+      }
+
+      await loadInteractions();
+      setFeedback('');
+      setSelectedFiles([]);
+      setQuestionnaireFile(null);
+    } catch (err) {
+      console.error('Ошибка отправки:', err);
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Функция отправки фидбека эксперта
+  const handleSubmitExpertFeedback = async () => {
+    setIsSubmitting(true);
+    try {
+      // 1. Гарантируем, что CSRF-токен установлен в cookies
+      await fetchCSRFToken(); // этот вызов установит куку csrftoken, если её нет
   
+      const csrftoken = getCSRFToken();
+      if (!csrftoken) {
+        alert('CSRF-токен не найден. Обновите страницу или выполните GET-запрос к API!');
+        setIsSubmitting(false);
+        return;
+      }
   
+      const formData = new FormData();
+      formData.append('audit', id);
+      formData.append('expert_comment', feedback);
   
+      selectedFiles.forEach((file, index) => {
+        formData.append(`files`, file);  // Имя поля должно совпадать с сериализатором
+      });
   
+      const response = await fetch('/api/interactions/add_comment/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken': csrftoken
+        },
+        body: formData
+      });
   
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Ошибка отправки фидбека');
+      }
   
+      await loadInteractions();
+      setFeedback('');
+      setSelectedFiles([]);
+    } catch (err) {
+      console.error('Ошибка отправки фидбека:', err);
+      alert(err.message || 'Не удалось отправить фидбек');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+
+  // Обновите кнопку отправки:
+  <button
+    type="button"
+    onClick={user?.role === 'participant' ? handleSubmitResponse : handleSubmitExpertFeedback}
+    disabled={isSubmitting}
+    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+  >
+    <Send className="h-4 w-4 mr-2" />
+    {isSubmitting ? 'Отправка...' : user?.role === 'participant' ? 'Отправить ответ' : 'Отправить фидбек'}
+  </button>
+
+  // Функция скачивания файла
+  // const handleDownloadFile = async (fileUrl: string) => {
+  //   try {
+  //     const filePath = fileUrl.split('/media/')[1];
+  //     const encodedFilePath = encodeURIComponent(filePath);
+      
+  //     const response = await fetch(
+  //       `/api/download/${encodedFilePath}/`, 
+  //       { credentials: 'include' }
+  //     );
+
+  //     if (!response.ok) throw new Error('Ошибка загрузки файла');
+      
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.download = filePath.split('/').pop() || 'file';
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (err) {
+  //     console.error('Download failed:', err);
+  //     alert('Не удалось скачать файл');
+  //   }
+  // };
+
+  // Эффект для загрузки данных при открытии вкладки
+  useEffect(() => {
+    fetchCSRFToken().catch(console.error);
+    if (activeTab === 'responses') {
+      loadInteractions();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     setLoading(true);
@@ -487,6 +677,203 @@ const AuditDetails: React.FC = () => {
           )}
         </div>
       )}
+
+      {activeTab === 'responses' && (
+        <div className="space-y-6">
+          {/* Секция последнего взаимодействия */}
+          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Последнее взаимодействие</h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+                Хронология комментариев и файлов
+              </p>
+            </div>
+            
+            <div className="border-t border-gray-200 dark:border-gray-700">
+              {interactions.slice(-1).map(interaction => (
+                <div key={interaction.id} className="px-4 py-5 sm:p-6 space-y-6">
+                  {/* Блок эксперта */}
+                  {interaction.expert_comment && (
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                      <div className="flex items-start space-x-3">
+                        <MessageSquare className="h-5 w-5 text-gray-400 dark:text-gray-500 mt-1" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">Комментарий эксперта</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{interaction.expert_comment}</p>
+                          {interaction.files && (
+                            <div className="mt-3 space-y-2">
+                              {interaction.files && (
+                                <div className="mt-3 space-y-2">
+                                  {/* Преобразуем files в массив и фильтруем null/undefined */}
+                                  {(Array.isArray(interaction.files) 
+                                    ? interaction.files 
+                                    : [interaction.files].filter(Boolean)
+                                  ).map((file, index) => (
+                                    <div key={index} className="flex items-center space-x-2 text-sm">
+                                      <Paperclip className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                      <button
+                                        onClick={() => handleDownloadFile(file.url, file.name)}
+                                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
+                                      >
+                                        {file.name}
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Блок участника */}
+                  {interaction.participant_comment && (
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                      <div className="flex items-start space-x-3">
+                        <MessageSquare className="h-5 w-5 text-gray-400 dark:text-gray-500 mt-1" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">Комментарий участника</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{interaction.participant_comment}</p>
+                          {interaction.files && (
+                            <div className="mt-3 space-y-2">
+                              {interaction.files && (
+                                <div className="mt-3 space-y-2">
+                                  {/* Преобразуем files в массив и фильтруем null/undefined */}
+                                  {(Array.isArray(interaction.files) 
+                                    ? interaction.files 
+                                    : [interaction.files].filter(Boolean)
+                                  ).map((file, index) => (
+                                    <div key={index} className="flex items-center space-x-2 text-sm">
+                                      <Paperclip className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                      <button
+                                        onClick={() => handleDownloadFile(file.url, file.name)}
+                                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
+                                      >
+                                        {file.name}
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Форма отправки ответа/фидбека */}
+          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                {user?.role === 'participant' ? 'Отправить ответ' : 'Оставить фидбек'}
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+                {user?.role === 'participant' 
+                  ? 'Загрузите заполненную анкету и документы'
+                  : 'Оставьте комментарий и прикрепите файлы'}
+              </p>
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-700">
+              <div className="px-4 py-5 sm:p-6 space-y-6">
+                {/* Поле для комментария */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {user?.role === 'participant' ? 'Комментарий' : 'Фидбек'}
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                    value={feedback}
+                    onChange={e => setFeedback(e.target.value)}
+                    placeholder={user?.role === 'participant' 
+                      ? 'Добавьте комментарий к вашей отправке...'
+                      : 'Оставьте фидбек по отправке участника...'}
+                  />
+                </div>
+
+                {/* Загрузка файлов */}
+                {user?.role === 'participant' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Заполненная анкета
+                    </label>
+                    <div
+                      {...getResponseProps()}
+                      className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md"
+                    >
+                      <div className="space-y-1 text-center">
+                        <input {...getResponseInputProps()} />
+                        <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                          <label className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                            <span>Загрузить анкету</span>
+                          </label>
+                        </div>
+                        {questionnaireFile && (
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                            {questionnaireFile.name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Поддерживающие документы */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Поддерживающие документы
+                  </label>
+                  <div
+                    {...getSupportingProps()}
+                    className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md"
+                  >
+                    <div className="space-y-1 text-center">
+                      <input {...getSupportingInputProps()} />
+                      <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                        <label className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                          <span>Загрузить документы</span>
+                        </label>
+                      </div>
+                      {selectedFiles.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {selectedFiles.map((file, index) => (
+                            <p key={index} className="text-xs text-gray-600 dark:text-gray-400">
+                              {file.name}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Кнопка отправки */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={user?.role === 'participant' ? handleSubmitResponse : handleSubmitExpertFeedback}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {isSubmitting ? 'Отправка...' : 
+                      user?.role === 'participant' ? 'Отправить ответ' : 'Отправить фидбек'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {activeTab === 'history' && (
         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">

@@ -77,13 +77,47 @@ const csrfToken = getCookie('csrftoken');
 //     }
 //   }
 
-export async function getCSRFToken() {
-    const res = await fetch(`${API_URL}csrf/`, {
-      credentials: 'include',
-    });
-    const data = await res.json();
-    return data.csrfToken;
+// export async function getCSRFToken() {
+//     const res = await fetch(`${API_URL}csrf/`, {
+//       credentials: 'include',
+//     });
+//     const data = await res.json();
+//     return data.csrfToken;
+//   }
+
+// src/apiService.js
+
+// Правильное получение CSRF-токена из cookie
+export function getCSRFToken() {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Ищем cookie с нужным именем
+      if (cookie.substring(0, 10) === 'csrftoken=') {
+        cookieValue = decodeURIComponent(cookie.substring(10));
+        break;
+      }
+    }
   }
+  return cookieValue;
+}
+
+// Асинхронное получение CSRF-токена с сервера
+export async function fetchCSRFToken() {
+  const response = await fetch('http://localhost:8000/api/csrf/', {
+    credentials: 'include'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Не удалось получить CSRF-токен');
+  }
+  
+  await response.json(); // Это запустит установку cookie
+  return getCSRFToken();
+}
+
   
   // function getCookie(name) {
   //   let cookieValue = null;
@@ -306,14 +340,43 @@ export async function getCSRFToken() {
     return await res.json();
   }
 
-  export async function fetchAuditHistory(auditId) {
-    const res = await fetch(`${API_URL}audits/${auditId}/timeline/`, { 
-      credentials: 'include' 
-    });
-    
-    if (!res.ok) {
-      throw new Error('Ошибка загрузки истории аудита');
+  export async function fetchAuditHistory(id) {
+    try {
+      const res = await fetch(`/api/audits/${id}/timeline/`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Ошибка загрузки истории');
+      return await res.json();
+    } catch (error) {
+      console.error("Ошибка при загрузке истории:", error);
+      // Вернуть пустой массив, чтобы приложение не ломалось
+      return [];
     }
-    
+  }
+
+  // Получение списка взаимодействий (responses)
+  export async function fetchAuditInteractions(id) {
+    const res = await fetch(`/api/audits/${id}/timeline/`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Ошибка загрузки взаимодействий');
+    return await res.json();
+  }
+
+    // Отправка ответа участника или эксперта (универсальная функция)
+  export async function postInteraction(formData) {
+    const csrftoken = getCSRFToken();
+    const res = await fetch('/api/interactions/add_comment/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    });
+    if (!res.ok) {
+      let errorText = 'Ошибка отправки';
+      try {
+        const data = await res.json();
+        errorText = data.detail || errorText;
+      } catch {}
+      throw new Error(errorText);
+    }
     return await res.json();
   }
