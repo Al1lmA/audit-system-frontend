@@ -277,3 +277,43 @@ export async function getCSRFToken() {
     if (!res.ok) throw new Error('Ошибка загрузки компании');
     return await res.json();
   }
+
+  export async function fetchAudits(params) {
+    const url = new URL(`${API_URL}audits/`);
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          url.searchParams.append(key, value);
+        }
+      });
+    }
+    
+    const res = await fetch(url.toString(), { 
+      credentials: 'include' 
+    });
+    
+    if (!res.ok) {
+      throw new Error('Ошибка загрузки аудитов');
+    }
+    
+    return await res.json();
+  }
+
+  export async function fetchAudit(id) {
+    const res = await fetch(`${API_URL}audits/${id}/`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Ошибка загрузки аудита');
+    return await res.json();
+  }
+
+  export async function fetchAuditHistory(auditId) {
+    const res = await fetch(`${API_URL}audits/${auditId}/timeline/`, { 
+      credentials: 'include' 
+    });
+    
+    if (!res.ok) {
+      throw new Error('Ошибка загрузки истории аудита');
+    }
+    
+    return await res.json();
+  }

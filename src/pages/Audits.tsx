@@ -1,89 +1,56 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { ClipboardCheck, Plus, Search, Eye, ArrowUpDown, Calendar } from 'lucide-react';
+import { fetchAudits, fetchCompanies } from '../apiService';
 
-interface Audit {
-  id: string;
-  name: string;
-  company: string;
-  companyId: string;
-  date: string;
-  status: 'In Progress' | 'Completed' | 'Planned';
-  completion: number;
-  expert: string;
-}
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'in progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'planned', label: 'Planned' },
+];
 
-const Audits: React.FC = () => {
+const Audits = () => {
   const [searchParams] = useSearchParams();
   const companyIdFilter = searchParams.get('companyId');
   const { user } = useUser();
   const canCreateAudit = user?.role === 'expert' || user?.role === 'admin';
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
-    from: '',
-    to: ''
-  });
-  const [sortField, setSortField] = useState<keyof Audit>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  
-  // Mock data
-  const mockAudits: Audit[] = [
-    {
-      id: '1',
-      name: 'Annual IT Infrastructure Audit',
-      company: 'Acme Inc.',
-      companyId: '1',
-      date: '2025-02-15',
-      status: 'In Progress',
-      completion: 65,
-      expert: 'John Expert'
-    },
-    {
-      id: '2',
-      name: 'Security Compliance Audit',
-      company: 'TechCorp',
-      companyId: '2',
-      date: '2025-02-10',
-      status: 'In Progress',
-      completion: 30,
-      expert: 'John Expert'
-    },
-    {
-      id: '3',
-      name: 'Data Protection Assessment',
-      company: 'Global Systems',
-      companyId: '3',
-      date: '2025-01-28',
-      status: 'Completed',
-      completion: 100,
-      expert: 'Sarah Expert'
-    },
-    {
-      id: '4',
-      name: 'Network Security Audit',
-      company: 'Innovate Solutions',
-      companyId: '4',
-      date: '2025-01-15',
-      status: 'Completed',
-      completion: 100,
-      expert: 'John Expert'
-    },
-    {
-      id: '5',
-      name: 'Cloud Infrastructure Review',
-      company: 'DataTech',
-      companyId: '5',
-      date: '2025-03-10',
-      status: 'Planned',
-      completion: 0,
-      expert: 'Sarah Expert'
-    }
-  ];
 
-  const handleSort = (field: keyof Audit) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [sortField, setSortField] = useState('date');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [audits, setAudits] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    const params = {};
+    if (companyIdFilter) params.company = companyIdFilter;
+    if (statusFilter !== 'all') params.status = statusFilter;
+    if (dateRange.from) params.date_from = dateRange.from;
+    if (dateRange.to) params.date_to = dateRange.to;
+    if (searchTerm) params.search = searchTerm;
+
+    fetchAudits(params)
+      .then(data => setAudits(data))
+      .catch(err => setError(err.message || 'Ошибка загрузки аудитов'))
+      .finally(() => setLoading(false));
+  }, [companyIdFilter, statusFilter, dateRange.from, dateRange.to, searchTerm]);
+
+  useEffect(() => {
+    fetchCompanies()
+      .then(setCompanies)
+      .catch(() => setCompanies([]));
+  }, []);
+
+  const handleSort = (field) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -92,23 +59,43 @@ const Audits: React.FC = () => {
     }
   };
 
-  const filteredAudits = mockAudits
+  let filteredAudits = audits
     .filter(audit => {
-      // Base filters
-      const matchesSearch = audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          audit.company.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || audit.status === statusFilter;
-      const matchesDate = (!dateRange.from || audit.date >= dateRange.from) &&
-                         (!dateRange.to || audit.date <= dateRange.to);
-      const matchesCompany = companyIdFilter ? audit.companyId === companyIdFilter : true;
+      const companyName =
+        audit.company && typeof audit.company === 'object'
+          ? audit.company.name
+          : companies.find(c => String(c.id) === String(audit.company))?.name || '';
 
-      // Participant-specific filters
+      const matchesSearch =
+        audit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        companyName.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Исправленная фильтрация по статусу (всё в нижнем регистре)
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (audit.status && audit.status.toLowerCase() === statusFilter);
+
+      const matchesDate =
+        (!dateRange.from || audit.date >= dateRange.from) &&
+        (!dateRange.to || audit.date <= dateRange.to);
+
+      const matchesCompany = companyIdFilter
+        ? String(
+            audit.company && typeof audit.company === 'object'
+              ? audit.company.id
+              : audit.company
+          ) === String(companyIdFilter)
+        : true;
+
       if (user?.role === 'participant') {
-        return matchesSearch && 
-               matchesStatus && 
-               matchesDate && 
-               audit.company === user.organization &&
-               (audit.status === 'In Progress' || audit.status === 'Completed');
+        const userOrg = user.organization;
+        return (
+          matchesSearch &&
+          matchesStatus &&
+          matchesDate &&
+          companyName === userOrg &&
+          (audit.status === 'in progress' || audit.status === 'completed')
+        );
       }
 
       return matchesSearch && matchesStatus && matchesDate && matchesCompany;
@@ -116,13 +103,14 @@ const Audits: React.FC = () => {
     .sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
-      
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc' 
+        return sortDirection === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
       return 0;
     });
 
@@ -132,8 +120,8 @@ const Audits: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Audits</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {companyIdFilter 
-              ? 'Audits for the selected company' 
+            {companyIdFilter
+              ? 'Audits for the selected company'
               : user?.role === 'participant'
               ? `Audits for ${user.organization}`
               : 'Manage and view all IT audits'}
@@ -171,10 +159,13 @@ const Audits: React.FC = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">All Statuses</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-              {user?.role !== 'participant' && <option value="Planned">Planned</option>}
+              {STATUS_OPTIONS.filter(
+                opt => user?.role !== 'participant' || opt.value !== 'planned'
+              ).map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-center space-x-2">
@@ -198,6 +189,16 @@ const Audits: React.FC = () => {
 
       {/* Audits list */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+        {loading && (
+          <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+            Loading...
+          </div>
+        )}
+        {error && (
+          <div className="px-6 py-4 text-center text-red-500 dark:text-red-400">
+            {error}
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
@@ -212,7 +213,7 @@ const Audits: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('company')}
                   >
@@ -221,7 +222,7 @@ const Audits: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('date')}
                   >
@@ -230,7 +231,7 @@ const Audits: React.FC = () => {
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('status')}
                   >
@@ -242,7 +243,7 @@ const Audits: React.FC = () => {
                   Completion
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  <button 
+                  <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('expert')}
                   >
@@ -256,67 +257,81 @@ const Audits: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredAudits.map((audit) => (
-                <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                        <ClipboardCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          <Link to={`/audits/${audit.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                            {audit.name}
-                          </Link>
+              {filteredAudits.map((audit) => {
+                const company =
+                  audit.company && typeof audit.company === 'object'
+                    ? audit.company
+                    : companies.find(c => String(c.id) === String(audit.company));
+                const expertName =
+                  audit.expert && typeof audit.expert === 'object'
+                    ? audit.expert.username
+                    : audit.expert;
+
+                return (
+                  <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                          <ClipboardCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            <Link to={`/audits/${audit.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                              {audit.name}
+                            </Link>
+                          </div>
                         </div>
                       </div>
-                    
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      <Link to={`/companies/${audit.companyId}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                        {audit.company}
-                      </Link>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {audit.date}
-                  </td>
-                  <td className="px-6 py-4  whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      audit.status === 'Completed' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
-                      audit.status === 'In Progress' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
-                      'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                    }`}>
-                      {audit.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                      <div 
-                        className={`h-2.5 rounded-full ${
-                          audit.status === 'Completed' ? 'bg-green-500 dark:bg-green-600' : 
-                          audit.status === 'In Progress' ? 'bg-yellow-500 dark:bg-yellow-600' :
-                          'bg-blue-500 dark:bg-blue-600'
-                        }`} 
-                        style={{ width: `${audit.completion}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audit.completion}%</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {audit.expert}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-3">
-                      <Link to={`/audits/${audit.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
-                        <Eye className="h-5 w-5" />
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {company ? (
+                          <Link to={`/companies/${company.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                            {company.name}
+                          </Link>
+                        ) : (
+                          '-'
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {audit.date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        audit.status === 'completed' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
+                        audit.status === 'in progress' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
+                        'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                      }`}>
+                        {audit.status && audit.status[0].toUpperCase() + audit.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        <div 
+                          className={`h-2.5 rounded-full ${
+                            audit.status === 'completed' ? 'bg-green-500 dark:bg-green-600' : 
+                            audit.status === 'in progress' ? 'bg-yellow-500 dark:bg-yellow-600' :
+                            'bg-blue-500 dark:bg-blue-600'
+                          }`} 
+                          style={{ width: `${audit.completion}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audit.completion}%</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {expertName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-3">
+                        <Link to={`/audits/${audit.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                          <Eye className="h-5 w-5" />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
