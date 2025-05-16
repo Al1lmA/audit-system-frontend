@@ -380,3 +380,60 @@ export async function fetchCSRFToken() {
     }
     return await res.json();
   }
+
+  // Добавляем новые функции для работы с аудитами
+  export async function createAudit(auditData) {
+    const csrfToken = getCSRFToken();
+    const formData = new FormData();
+    
+    // Добавляем поля в FormData
+    Object.entries(auditData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (key === 'questionnaire' && value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value);
+        }
+      }
+    });
+
+    const res = await fetch(`${API_URL}audits/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+      },
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.detail || errorData.message || 'Ошибка создания аудита');
+    }
+    return await res.json();
+  }
+
+  export async function fetchParticipantsByCompany(companyId) {
+    // Пример: /api/users/?company=<id>&role=participant
+    const res = await fetch(`/api/users/?company=${companyId}&role=participant`, {
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('Ошибка загрузки участников');
+    return await res.json();
+  }
+  
+  // Получить статистику для Dashboard
+export async function fetchDashboardStats() {
+  const res = await fetch('/api/dashboard/summary/', { credentials: 'include' });
+  if (!res.ok) throw new Error('Ошибка загрузки статистики');
+  return await res.json();
+}
+
+// Получить недавние аудиты (или все, если нужно)
+export async function fetchRecentAudits(params = {}) {
+  const url = new URL('/api/audits/', window.location.origin);
+  Object.entries(params).forEach(([key, value]) => url.searchParams.append(key, value));
+  const res = await fetch(url.toString(), { credentials: 'include' });
+  if (!res.ok) throw new Error('Ошибка загрузки аудитов');
+  return await res.json();
+}

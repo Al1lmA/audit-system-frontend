@@ -23,7 +23,7 @@ const AuditDetails: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState<'overview' | 'responses' | 'history' | 'results'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'responses' | 'history'>('overview');
 
   // --- Только для overview ---
   const [audit, setAudit] = useState<any>(null);
@@ -332,7 +332,7 @@ const AuditDetails: React.FC = () => {
           >
             History
           </button>
-          <button
+          {/* <button
             className={`${
               activeTab === 'results'
                 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
@@ -341,7 +341,7 @@ const AuditDetails: React.FC = () => {
             onClick={() => setActiveTab('results')}
           >
             Results & Recommendations
-          </button>
+          </button> */}
         </nav>
       </div>
 
@@ -439,7 +439,7 @@ const AuditDetails: React.FC = () => {
         </div>
       )}
 
-      {activeTab === 'results' && (
+      {/* {activeTab === 'results' && (
         <div className="space-y-6">
           {user?.role === 'expert' ? (
             <>
@@ -676,7 +676,7 @@ const AuditDetails: React.FC = () => {
             </>
           )}
         </div>
-      )}
+      )} */}
 
       {activeTab === 'responses' && (
         <div className="space-y-6">
@@ -953,8 +953,6 @@ const AuditDetails: React.FC = () => {
           </div>
         </div>
       )}
-
-
     </div>
   );
 };

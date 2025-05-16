@@ -1,7 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useDropzone } from 'react-dropzone';
+import { 
+  fetchCompanies,
+  fetchParticipantsByCompany,
+  createAudit,
+  fetchCSRFToken
+} from '../apiService';
+import { toast } from 'react-toastify';
 import { Calendar, Building2, User, Upload, FileSpreadsheet } from 'lucide-react';
 
 interface Company {
@@ -13,53 +20,59 @@ interface Participant {
   id: string;
   name: string;
   email: string;
-  organization: string;
+  company: string;
 }
 
 const CreateAudit: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
-  const [searchCompany, setSearchCompany] = useState('');
-  const [searchParticipant, setSearchParticipant] = useState('');
-  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
-  const [showParticipantDropdown, setShowParticipantDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
-    startDate: '',
-    endDate: '',
+    start_date: '',
+    end_date: '',
     framework: '',
     objective: '',
-    company: null as Company | null,
-    participant: null as Participant | null,
+    company_id: '',
+    participant_id: '',
     questionnaire: null as File | null
   });
 
-  // Mock data
-  const companies: Company[] = [
-    { id: '1', name: 'Acme Inc.' },
-    { id: '2', name: 'TechCorp' },
-    { id: '3', name: 'Global Systems' },
-  ];
+  // Загрузка компаний
+  useEffect(() => {
+    const loadCompanies = async () => {
+      try {
+        const data = await fetchCompanies();
+        setCompanies(data);
+      } catch (error) {
+        toast.error('Ошибка загрузки компаний');
+      }
+    };
+    loadCompanies();
+  }, []);
 
-  const participants: Participant[] = [
-    { id: '1', name: 'John Participant', email: 'john@acme.com', organization: 'Acme Inc.' },
-    { id: '2', name: 'Jane Participant', email: 'jane@techcorp.com', organization: 'TechCorp' },
-    { id: '3', name: 'Mike Participant', email: 'mike@globalsys.com', organization: 'Global Systems' },
-  ];
+  // Загрузка участников при выборе компании
+  useEffect(() => {
+    if (!formData.company_id) {
+      setParticipants([]);
+      return;
+    }
+    fetchParticipantsByCompany(formData.company_id)
+      .then(data => {
+        // Фильтруем по роли, если API не умеет
+        setParticipants(Array.isArray(data) ? data.filter(u => u.role === 'participant') : []);
+      })
+      .catch(err => {
+        toast.error('Не удалось загрузить список участников');
+        setParticipants([]);
+      });
+  }, [formData.company_id]);
+  
 
-  const filteredCompanies = companies.filter(company =>
-    company.name.toLowerCase().includes(searchCompany.toLowerCase())
-  );
-
-  const filteredParticipants = participants.filter(participant =>
-    formData.company 
-      ? participant.organization === formData.company.name &&
-        participant.name.toLowerCase().includes(searchParticipant.toLowerCase())
-      : participant.name.toLowerCase().includes(searchParticipant.toLowerCase())
-  );
-
+  // Обработка загрузки файла
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
@@ -72,72 +85,56 @@ const CreateAudit: React.FC = () => {
     }
   });
 
-  useEffect(() => {
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  useEffect(() => {
-    if (formData.company && formData.participant && formData.participant.organization !== formData.company.name) {
-      setFormData(prev => ({ ...prev, participant: null }));
-      setSearchParticipant('');
-    }
-  }, [formData.company, formData.participant]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  // Отправка формы
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Create new audit with "Planned" status
-    const newAudit = {
-      id: Date.now().toString(),
-      name: formData.name,
-      company: formData.company?.name || '',
-      companyId: formData.company?.id || '',
-      date: formData.startDate,
-      status: 'Planned',
-      completion: 0,
-      expert: user?.name || '',
-      participant: formData.participant,
-      endDate: formData.endDate,
-      framework: formData.framework,
-      objective: formData.objective,
-      questionnaire: formData.questionnaire,
-      history: []
-    };
+    try {
+      await fetchCSRFToken();
+      
+      const formPayload = new FormData();
+      formPayload.append('name', formData.name);
+      formPayload.append('start_date', new Date(formData.start_date).toISOString());
+      formPayload.append('end_date', new Date(formData.end_date).toISOString());
+      formPayload.append('framework', formData.framework);
+      formPayload.append('objective', formData.objective);
+      formPayload.append('company', formData.company_id);
+      formPayload.append('participant', formData.participant_id);
+      if (formData.questionnaire) {
+        formPayload.append('questionnaire', formData.questionnaire);
+      }
 
-    // In a real app, you would save this to your backend
-    console.log('Created new audit:', newAudit);
-    
-    // Navigate to the audits list
-    navigate('/audits');
+      await createAudit(formPayload);
+      toast.success('Аудит успешно создан!');
+      navigate('/audits');
+    } catch (error) {
+      toast.error(error.message || 'Ошибка при создании аудита');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto py-6 space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Create New Audit</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Создание нового аудита</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Fill in the audit details and upload the questionnaire
+          Заполните основные данные аудита и загрузите документы
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Basic Information */}
+        {/* Основные данные */}
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Basic Information</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Основные данные</h2>
           <div className="grid grid-cols-1 gap-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Audit Name/Title
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Название аудита
               </label>
               <input
                 type="text"
-                id="name"
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -147,8 +144,8 @@ const CreateAudit: React.FC = () => {
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Start Date
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Дата начала
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -156,18 +153,17 @@ const CreateAudit: React.FC = () => {
                   </div>
                   <input
                     type="date"
-                    id="startDate"
                     className="block w-full pl-10 rounded-md border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                    value={formData.start_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Expected End Date
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Планируемая дата завершения
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -175,10 +171,9 @@ const CreateAudit: React.FC = () => {
                   </div>
                   <input
                     type="date"
-                    id="endDate"
                     className="block w-full pl-10 rounded-md border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                    value={formData.end_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
                     required
                   />
                 </div>
@@ -186,12 +181,11 @@ const CreateAudit: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="framework" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Framework/Standard (Optional)
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Стандарт аудита (опционально)
               </label>
               <input
                 type="text"
-                id="framework"
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                 value={formData.framework}
                 onChange={(e) => setFormData(prev => ({ ...prev, framework: e.target.value }))}
@@ -199,11 +193,10 @@ const CreateAudit: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="objective" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Audit Objective
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Цели аудита
               </label>
               <textarea
-                id="objective"
                 rows={3}
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                 value={formData.objective}
@@ -214,121 +207,61 @@ const CreateAudit: React.FC = () => {
           </div>
         </div>
 
-        {/* Participants Information */}
+        {/* Участники аудита */}
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Participants Information</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Участники аудита</h2>
           <div className="grid grid-cols-1 gap-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Expert (Auditor)
-                </label>
-                <div className="mt-1 flex items-center">
-                  <User className="h-5 w-5 text-gray-400 mr-2" />
-                  <span className="text-gray-900 dark:text-white">{user?.name}</span>
-                </div>
-                <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {user?.email}
-                </div>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Организация
+              </label>
+              <select
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                value={formData.company_id}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  company_id: e.target.value,
+                  participant_id: ''
+                }))}
+                required
+              >
+                <option value="">Выберите организацию</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Company
+                Представитель организации
               </label>
-              <div className="mt-1 relative">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Building2 className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    className="block w-full pl-10 pr-10 rounded-md border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    placeholder="Search company..."
-                    value={searchCompany}
-                    onChange={(e) => {
-                      setSearchCompany(e.target.value);
-                      setShowCompanyDropdown(true);
-                    }}
-                    onFocus={() => setShowCompanyDropdown(true)}
-                  />
-                </div>
-                {showCompanyDropdown && (
-                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 shadow-lg rounded-md py-1">
-                    {filteredCompanies.map((company) => (
-                      <button
-                        key={company.id}
-                        type="button"
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, company }));
-                          setSearchCompany(company.name);
-                          setShowCompanyDropdown(false);
-                        }}
-                      >
-                        {company.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Company Representative
-              </label>
-              <div className="mt-1 relative">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    className="block w-full pl-10 pr-10 rounded-md border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    placeholder="Search representative..."
-                    value={searchParticipant}
-                    onChange={(e) => {
-                      setSearchParticipant(e.target.value);
-                      setShowParticipantDropdown(true);
-                    }}
-                    onFocus={() => setShowParticipantDropdown(true)}
-                    disabled={!formData.company}
-                  />
-                </div>
-                {showParticipantDropdown && formData.company && (
-                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 shadow-lg rounded-md py-1">
-                    {filteredParticipants.map((participant) => (
-                      <button
-                        key={participant.id}
-                        type="button"
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, participant }));
-                          setSearchParticipant(participant.name);
-                          setShowParticipantDropdown(false);
-                        }}
-                      >
-                        <div>{participant.name}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{participant.email}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {formData.participant && (
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  {formData.participant.email}
-                </div>
-              )}
+              <select
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                value={formData.participant_id}
+                onChange={e => setFormData(prev => ({
+                  ...prev,
+                  participant_id: e.target.value
+                }))}
+                disabled={!formData.company_id}
+                required
+              >
+                <option value="">Выберите представителя</option>
+                {participants.map(participant => (
+                  <option key={participant.id} value={participant.id}>
+                    {participant.name} ({participant.email})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Questionnaire Upload */}
+        {/* Загрузка документов */}
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Upload Questionnaire</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Документы аудита</h2>
           <div
             {...getRootProps()}
             className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
@@ -353,32 +286,34 @@ const CreateAudit: React.FC = () => {
                   ) : (
                     <span>
                       {isDragActive
-                        ? 'Drop the file here'
-                        : 'Upload a questionnaire file'}
+                        ? 'Отпустите для загрузки'
+                        : 'Перетащите или выберите файл анкеты'}
                     </span>
                   )}
                 </label>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                XLSX file format only
+                Поддерживаемые форматы: .xlsx
               </p>
             </div>
           </div>
         </div>
 
+        {/* Кнопки действий */}
         <div className="flex justify-end space-x-3">
           <button
             type="button"
             onClick={() => navigate('/audits')}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            Cancel
+            Отмена
           </button>
           <button
             type="submit"
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+            disabled={loading}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50"
           >
-            Create Audit
+            {loading ? 'Создание...' : 'Создать аудит'}
           </button>
         </div>
       </form>

@@ -1,40 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { ClipboardCheck, Building2, FileText, BarChart4, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { fetchDashboardStats, fetchRecentAudits } from '../apiService';
 
 const Dashboard: React.FC = () => {
   const { user } = useUser();
 
-  // Mock data
-  const stats = [
-    { name: 'Total Companies', value: '24', icon: Building2, color: 'bg-blue-500 dark:bg-blue-600', link: '/companies' },
-    { name: 'Active Audits', value: '7', icon: ClipboardCheck, color: 'bg-green-500 dark:bg-green-600', link: '/audits' },
-    { name: 'Completed Audits', value: '18', icon: FileText, color: 'bg-purple-500 dark:bg-purple-600', link: '/reports' },
-    { name: 'Improvement Areas', value: '42', icon: BarChart4, color: 'bg-yellow-500 dark:bg-yellow-600', link: '/analytics' },
-  ];
+  const [stats, setStats] = useState([
+    { name: 'Total Companies', value: '-', icon: Building2, color: 'bg-blue-500 dark:bg-blue-600', link: '/companies' },
+    { name: 'Active Audits', value: '-', icon: ClipboardCheck, color: 'bg-green-500 dark:bg-green-600', link: '/audits' },
+    { name: 'Completed Audits', value: '-', icon: FileText, color: 'bg-purple-500 dark:bg-purple-600', link: '/reports' },
+    { name: 'Improvement Areas', value: '-', icon: BarChart4, color: 'bg-yellow-500 dark:bg-yellow-600', link: '/analytics' },
+  ]);
+  const [recentAudits, setRecentAudits] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const allAudits = [
-    { id: '1', company: 'Acme Inc.', status: 'In Progress', date: '2025-02-15', completion: 65 },
-    { id: '2', company: 'TechCorp', status: 'In Progress', date: '2025-02-10', completion: 30 },
-    { id: '3', company: 'Global Systems', status: 'Completed', date: '2025-01-28', completion: 100 },
-    { id: '4', company: 'Innovate Solutions', status: 'Completed', date: '2025-01-15', completion: 100 },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    // Загрузка статистики
+    fetchDashboardStats()
+      .then(data => {
+        setStats([
+          { name: 'Total Companies', value: data.total_companies, icon: Building2, color: 'bg-blue-500 dark:bg-blue-600', link: '/companies' },
+          { name: 'Active Audits', value: data.active_audits, icon: ClipboardCheck, color: 'bg-green-500 dark:bg-green-600', link: '/audits' },
+          { name: 'Completed Audits', value: data.completed_audits, icon: FileText, color: 'bg-purple-500 dark:bg-purple-600', link: '/reports' },
+          { name: 'Improvement Areas', value: data.improvement_areas, icon: BarChart4, color: 'bg-yellow-500 dark:bg-yellow-600', link: '/analytics' },
+        ]);
+      })
+      .catch(() => setStats(stats));
 
-  // Filter audits for participants
-  const recentAudits = user?.role === 'participant'
-    ? allAudits.filter(audit => 
-        audit.company === user.organization && 
-        (audit.status === 'In Progress' || audit.status === 'Completed')
-      )
-    : allAudits;
+    // Загрузка последних аудитов
+    const params: any = user?.role === 'participant'
+      ? { participant: user.id }
+      : { recent: 'true' };
+    fetchRecentAudits(params)
+      .then(data => setRecentAudits(data))
+      .catch(() => setRecentAudits([]))
+      .finally(() => setLoading(false));
+  }, [user]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Welcome back, {user?.name}!
+          Добро пожаловать, {user?.username}!
           {user?.role === 'participant' && user?.organization && (
             <span className="ml-1">({user.organization})</span>
           )}
@@ -44,7 +55,7 @@ const Dashboard: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats
-          .filter(stat => user?.role === 'participant' ? !['Total Companies'].includes(stat.name) : true)
+          .filter(stat => user?.role === 'participant' ? stat.name !== 'Total Companies' : true)
           .map((stat) => (
             <Link
               key={stat.name}
@@ -82,25 +93,17 @@ const Dashboard: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Company
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Date
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Completion
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completion</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {recentAudits.map((audit) => (
                 <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{audit.company}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{audit.company_name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -122,78 +125,24 @@ const Dashboard: React.FC = () => {
                             ? 'bg-green-500 dark:bg-green-600' 
                             : 'bg-yellow-500 dark:bg-yellow-600'
                         }`} 
-                        style={{ width: `${audit.completion}%` }}
+                        style={{ width: `${audit.completion || 0}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audit.completion}%</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audit.completion || 0}%</span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {recentAudits.length === 0 && (
+        {recentAudits.length === 0 && !loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
             No recent audits found.
           </div>
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Quick Actions</h2>
-        </div>
-        <div className="px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {user?.role !== 'participant' && (
-              <>
-                <Link
-                  to="/audits/new"
-                  className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                >
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                    <ClipboardCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="absolute inset-0" aria-hidden="true" />
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">Start New Audit</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Create a new audit for a company</p>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/companies"
-                  className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                >
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="absolute inset-0" aria-hidden="true" />
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">Add Company</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Register a new company for audits</p>
-                  </div>
-                </Link>
-              </>
-            )}
-
-            <Link
-              to="/reports"
-              className="relative rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 dark:hover:border-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-            >
-              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                <FileText className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">View Reports</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Access audit reports and findings</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* Quick Actions ... (оставьте как есть) */}
     </div>
   );
 };

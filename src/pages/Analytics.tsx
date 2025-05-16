@@ -14,42 +14,11 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { ArrowUpDown, Filter, Building2, ClipboardCheck, Search, Upload, FileSpreadsheet, X, Download } from 'lucide-react';
-
-interface FilterTarget {
-  type: 'company' | 'audit';
-  id: string;
-  name: string;
-}
+import { Upload, FileSpreadsheet, X, Download } from 'lucide-react';
 
 const Analytics: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<string>('year');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [selectedTarget, setSelectedTarget] = useState<FilterTarget | null>(null);
-  const [showFilterSelector, setShowFilterSelector] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-
-  // Mock data for companies and audits
-  const companies = [
-    { id: '1', name: 'Acme Inc.' },
-    { id: '2', name: 'TechCorp' },
-    { id: '3', name: 'Global Systems' },
-  ];
-
-  const audits = [
-    { id: '1', name: 'Annual IT Infrastructure Audit - Acme Inc.' },
-    { id: '2', name: 'Security Compliance Audit - TechCorp' },
-    { id: '3', name: 'Data Protection Assessment - Global Systems' },
-  ];
-
-  const filteredCompanies = companies.filter(company =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredAudits = audits.filter(audit =>
-    audit.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   // Mock data for charts
   const complianceByCategory = [
@@ -100,14 +69,6 @@ const Analytics: React.FC = () => {
     { id: 4, insight: 'Organizations implementing the top 3 recommendations see an average 25% improvement in compliance scores within 6 months.' },
   ];
 
-  const handleTargetSelect = (target: FilterTarget) => {
-    setSelectedTarget(target);
-    setShowFilterSelector(false);
-    setSearchTerm('');
-    // Here you would fetch and update the analytics data for the selected target
-    console.log('Selected target for analytics:', target);
-  };
-
   // Add file upload handler
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -119,13 +80,12 @@ const Analytics: React.FC = () => {
 
   const handleGenerateReport = () => {
     // In a real application, this would generate a PDF report with the analytics data
-    console.log('Generating report for:', selectedTarget);
+    console.log('Generating report based on uploaded data');
     
     // Mock PDF generation and download
-    // In a real app, you would generate a proper PDF on the server
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('Analytics Report'));
-    element.setAttribute('download', `analytics_report_${selectedTarget?.name.toLowerCase().replace(/\s+/g, '_')}.pdf`);
+    element.setAttribute('download', 'analytics_report.pdf');
     element.style.display = 'none';
     document.body.appendChild(element);
     element.click();
@@ -138,9 +98,7 @@ const Analytics: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {selectedTarget 
-              ? `Analytics for ${selectedTarget.name}`
-              : 'Select a target or upload data for analysis'}
+            Upload data for analysis and view insights
           </p>
         </div>
         <div className="flex space-x-4">
@@ -154,25 +112,8 @@ const Analytics: React.FC = () => {
               onChange={handleFileUpload}
             />
           </label>
-          <button
-            onClick={() => setShowFilterSelector(true)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            {selectedTarget ? selectedTarget.name : 'Select Target'}
-          </button>
-          {selectedTarget && (
+          {uploadedFile && (
             <>
-              <select
-                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
-              >
-                <option value="month">Last Month</option>
-                <option value="quarter">Last Quarter</option>
-                <option value="year">Last Year</option>
-                <option value="all">All Time</option>
-              </select>
               <button
                 onClick={handleGenerateReport}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
@@ -186,7 +127,7 @@ const Analytics: React.FC = () => {
       </div>
 
       {/* Show uploaded file info if present */}
-      {uploadedFile && !selectedTarget && (
+      {uploadedFile && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -203,95 +144,23 @@ const Analytics: React.FC = () => {
         </div>
       )}
 
-      {/* Filter Selector Modal */}
-      {showFilterSelector && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Select Analytics Target</h2>
-            
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Search companies or audits..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Companies</h3>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {filteredCompanies.map((company) => (
-                    <button
-                      key={company.id}
-                      onClick={() => handleTargetSelect({ type: 'company', ...company })}
-                      className="w-full flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-left text-gray-900 dark:text-white"
-                    >
-                      <Building2 className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
-                      {company.name}
-                    </button>
-                  ))}
-                  {filteredCompanies.length === 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 p-2">No companies found</p>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Specific Audits</h3>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {filteredAudits.map((audit) => (
-                    <button
-                      key={audit.id}
-                      onClick={() => handleTargetSelect({ type: 'audit', ...audit })}
-                      className="w-full flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-left text-gray-900 dark:text-white"
-                    >
-                      <ClipboardCheck className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
-                      {audit.name}
-                    </button>
-                  ))}
-                  {filteredAudits.length === 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 p-2">No audits found</p>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => {
-                  setShowFilterSelector(false);
-                  setSearchTerm('');
-                }}
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!selectedTarget ? (
+      {!uploadedFile ? (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center">
-          <Filter className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Select a Target for Analysis</h2>
+          <Upload className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload Data for Analysis</h2>
           <p className="text-gray-500 dark:text-gray-400">
-            Choose a specific company or audit to view detailed analytics and insights.
+            Upload an XLSX file to view detailed analytics and insights.
           </p>
-          <button
-            onClick={() => setShowFilterSelector(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-          >
-            Select Target
-          </button>
+          <label className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 cursor-pointer">
+            <Upload className="h-4 w-4 mr-2" />
+            Select File
+            <input
+              type="file"
+              className="hidden"
+              accept=".xlsx"
+              onChange={handleFileUpload}
+            />
+          </label>
         </div>
       ) : (
         <>
@@ -304,20 +173,6 @@ const Analytics: React.FC = () => {
                   Breakdown of compliance status across different audit categories
                 </p>
               </div>
-              {selectedTarget.type === 'company' && (
-                <select
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="all">All Categories</option>
-                  <option value="Infrastructure">Infrastructure</option>
-                  <option value="Security">Security</option>
-                  <option value="Compliance">Compliance</option>
-                  <option value="Data Management">Data Management</option>
-                  <option value="Business Continuity">Business Continuity</option>
-                </select>
-              )}
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
               <div className="h-80">
