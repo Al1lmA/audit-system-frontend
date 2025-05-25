@@ -267,6 +267,9 @@ export async function fetchCSRFToken() {
   }
 
   export async function createCompany(data) {
+
+    const csrfToken = getCSRFToken();
+
     const res = await fetch(`${API_URL}companies/`, {
       method: 'POST',
       headers: { 
@@ -281,6 +284,9 @@ export async function fetchCSRFToken() {
   }
   
   export async function updateCompany(id, data) {
+
+    const csrfToken = getCSRFToken();
+
     const res = await fetch(`${API_URL}companies/${id}/`, {
       method: 'PUT',
       headers: { 
@@ -383,8 +389,11 @@ export async function fetchCSRFToken() {
 
   // Добавляем новые функции для работы с аудитами
   export async function createAudit(auditData) {
-    const csrfToken = getCSRFToken();
+    // const csrfToken = getCSRFToken();
     const formData = new FormData();
+    const csrfToken = getCookie('csrftoken');
+
+    
     
     // Добавляем поля в FormData
     Object.entries(auditData).forEach(([key, value]) => {

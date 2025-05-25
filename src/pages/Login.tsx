@@ -39,12 +39,12 @@ const Login: React.FC = () => {
             <ClipboardCheck className="h-16 w-16 text-indigo-600 dark:text-indigo-400" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to your account
+            Вход в систему
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Or{' '}
+            или{' '}
             <Link to="/register" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
-              create a new account
+              создать новый аккаунт
             </Link>
           </p>
         </div>
@@ -52,19 +52,19 @@ const Login: React.FC = () => {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                Email address
+                Электронная почта
               </label>
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700"
-                placeholder="Email address"
+                placeholder="Электронная почта"
                 {...register('email', { 
-                  required: 'Email is required',
+                  required: 'Укажите электронную почту',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
+                    message: 'Некорректный формат почты'
                   }
                 })}
                 disabled={loading}
@@ -75,15 +75,15 @@ const Login: React.FC = () => {
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                Пароль
               </label>
               <input
                 id="password"
                 type="password"
                 autoComplete="current-password"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700"
-                placeholder="Password"
-                {...register('password', { required: 'Password is required' })}
+                placeholder="Пароль"
+                {...register('password', { required: 'Укажите пароль' })}
                 disabled={loading}
               />
               {errors.password && (
@@ -102,7 +102,7 @@ const Login: React.FC = () => {
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Вход...' : 'Войти'}
             </button>
           </div>
         </form>
