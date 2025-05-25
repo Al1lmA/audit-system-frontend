@@ -2,7 +2,7 @@ import React from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Menu, Transition } from '@headlessui/react';
-import { UserCircle, LogOut, Settings, User, Sun, Moon } from 'lucide-react';
+import { UserCircle, LogOut, User, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -14,7 +14,7 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">IT Audit Platform</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Платформа для проведения аудита</h1>
           </div>
           <div className="flex items-center space-x-4">
             <button
@@ -27,7 +27,7 @@ const Header: React.FC = () => {
             <Menu as="div" className="relative ml-3">
               <div>
                 <Menu.Button className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  <span className="sr-only">Open user menu</span>
+                  <span className="sr-only">Открыть меню пользователя</span>
                   <div className="flex items-center gap-2">
                     <UserCircle className="h-8 w-8 text-gray-500 dark:text-gray-400" />
                     <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
@@ -56,11 +56,11 @@ const Header: React.FC = () => {
                           } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
                         >
                           <User className="w-5 h-5 mr-2" aria-hidden="true" />
-                          Profile
+                          Профиль
                         </Link>
                       )}
                     </Menu.Item>
-                    <Menu.Item>
+                    {/* <Menu.Item>
                       {({ active }) => (
                         <button
                           className={`${
@@ -68,10 +68,10 @@ const Header: React.FC = () => {
                           } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
                         >
                           <Settings className="w-5 h-5 mr-2" aria-hidden="true" />
-                          Settings
+                          Настройки
                         </button>
                       )}
-                    </Menu.Item>
+                    </Menu.Item> */}
                     <Menu.Item>
                       {({ active }) => (
                         <button
@@ -81,7 +81,7 @@ const Header: React.FC = () => {
                           onClick={logout}
                         >
                           <LogOut className="w-5 h-5 mr-2" aria-hidden="true" />
-                          Logout
+                          Выйти
                         </button>
                       )}
                     </Menu.Item>

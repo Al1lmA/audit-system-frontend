@@ -22,10 +22,10 @@ const Dashboard: React.FC = () => {
     fetchDashboardStats()
       .then(data => {
         setStats([
-          { name: 'Total Companies', value: data.total_companies, icon: Building2, color: 'bg-blue-500 dark:bg-blue-600', link: '/companies' },
-          { name: 'Active Audits', value: data.active_audits, icon: ClipboardCheck, color: 'bg-green-500 dark:bg-green-600', link: '/audits' },
-          { name: 'Completed Audits', value: data.completed_audits, icon: FileText, color: 'bg-purple-500 dark:bg-purple-600', link: '/reports' },
-          { name: 'Improvement Areas', value: data.improvement_areas, icon: BarChart4, color: 'bg-yellow-500 dark:bg-yellow-600', link: '/analytics' },
+          { name: 'Всего компаний', value: data.total_companies, icon: Building2, color: 'bg-blue-500 dark:bg-blue-600', link: '/companies' },
+          { name: 'Активные аудиты', value: data.active_audits, icon: ClipboardCheck, color: 'bg-green-500 dark:bg-green-600', link: '/audits' },
+          { name: 'Завершённые аудиты', value: data.completed_audits, icon: FileText, color: 'bg-purple-500 dark:bg-purple-600', link: '/reports' },
+          { name: 'Зоны для улучшения', value: data.improvement_areas, icon: BarChart4, color: 'bg-yellow-500 dark:bg-yellow-600', link: '/analytics' },
         ]);
       })
       .catch(() => setStats(stats));
@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Дашборд</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Добро пожаловать, {user?.username}!
           {user?.role === 'participant' && user?.organization && (
@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Stats */}
+      {/* Статистика */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats
           .filter(stat => user?.role === 'participant' ? stat.name !== 'Total Companies' : true)
@@ -81,22 +81,22 @@ const Dashboard: React.FC = () => {
           ))}
       </div>
 
-      {/* Recent Audits */}
+      {/* Последние аудиты */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Recent Audits</h2>
+          <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Последние аудиты</h2>
           <Link to="/audits" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
-            View all
+            Смотреть все
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completion</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Компания</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Статус</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Дата</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Завершение</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -111,7 +111,7 @@ const Dashboard: React.FC = () => {
                         ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
                         : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
                     }`}>
-                      {audit.status}
+                      {audit.status === 'Completed' ? 'Завершён' : 'В процессе'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
         </div>
         {recentAudits.length === 0 && !loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-            No recent audits found.
+            Последние аудиты не найдены.
           </div>
         )}
       </div>

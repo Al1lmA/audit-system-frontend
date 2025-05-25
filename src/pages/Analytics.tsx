@@ -96,15 +96,15 @@ const Analytics: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Аналитика</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Upload data for analysis and view insights
+            Загрузите данные для анализа
           </p>
         </div>
         <div className="flex space-x-4">
           <label className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
             <Upload className="h-4 w-4 mr-2" />
-            Upload XLSX
+            Загрузить XLSX
             <input
               type="file"
               className="hidden"
@@ -119,14 +119,14 @@ const Analytics: React.FC = () => {
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Generate Report
+                Сгенерировать отчёт
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Show uploaded file info if present */}
+      {/* Информация о загруженном файле */}
       {uploadedFile && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -147,13 +147,13 @@ const Analytics: React.FC = () => {
       {!uploadedFile ? (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center">
           <Upload className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload Data for Analysis</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Загрузите данные для анализа</h2>
           <p className="text-gray-500 dark:text-gray-400">
-            Upload an XLSX file to view detailed analytics and insights.
+            Загрузите файл XLSX, чтобы получить подробную аналитику
           </p>
           <label className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 cursor-pointer">
             <Upload className="h-4 w-4 mr-2" />
-            Select File
+            Выбрать файл
             <input
               type="file"
               className="hidden"
@@ -164,13 +164,13 @@ const Analytics: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Compliance by Category */}
+          {/* Соответствие по категориям */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
               <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Compliance by Category</h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Соответствие по категориям</h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                  Breakdown of compliance status across different audit categories
+                  Распределение статуса соответствия по категориям аудита
                 </p>
               </div>
             </div>
@@ -198,21 +198,20 @@ const Analytics: React.FC = () => {
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="compliant" stackId="a" fill="#4ade80" name="Compliant" />
-                    <Bar dataKey="partial" stackId="a" fill="#facc15" name="Partial" />
-                    <Bar dataKey="nonCompliant" stackId="a" fill="#f87171" name="Non-Compliant" />
+                    <Bar dataKey="compliant" stackId="a" fill="#4ade80" name="Соответствует" />
+                    <Bar dataKey="partial" stackId="a" fill="#facc15" name="Частично" />
+                    <Bar dataKey="nonCompliant" stackId="a" fill="#f87171" name="Не соответствует" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
-
-          {/* Compliance Trend */}
+          {/* Динамика соответствия */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Compliance Score Trend</h3>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Динамика индекса соответствия</h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                Overall compliance score trend over time
+                Общая динамика индекса соответствия во времени
               </p>
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
@@ -239,21 +238,21 @@ const Analytics: React.FC = () => {
                       }}
                     />
                     <Legend />
-                    <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} name="Compliance Score" />
+                    <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} name="Индекс соответствия" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
 
-          {/* Two-column layout for smaller charts */}
+          {/* Два столбца для дополнительных графиков */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Issues by Category */}
+            {/* Проблемы по категориям */}
             <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
               <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Issues by Category</h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Проблемы по категориям</h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                  Distribution of non-compliant findings
+                  Распределение несоответствий по категориям
                 </p>
               </div>
               <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
@@ -287,13 +286,12 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Top Recommendations */}
+            {/* Топ рекомендаций */}
             <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
               <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Top Recommendations</h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Топ рекомендаций</h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                  Most frequent improvement recommendations
+                  Самые частые рекомендации по улучшению
                 </p>
               </div>
               <div className="border-t border-gray-200 dark:border-gray-700">
@@ -316,7 +314,7 @@ const Analytics: React.FC = () => {
                         </div>
                         <div className="ml-2 flex-shrink-0 flex">
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                            {recommendation.frequency} occurrences
+                            {recommendation.frequency} раз(а)
                           </span>
                         </div>
                       </div>
@@ -327,12 +325,12 @@ const Analytics: React.FC = () => {
             </div>
           </div>
 
-          {/* AI Insights */}
+          {/* AI-инсайты */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">AI-Generated Insights</h3>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Инсайты, сгенерированные ИИ</h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                Intelligent analysis of audit data patterns
+                Интеллектуальный анализ паттернов аудиторских данных
               </p>
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700">

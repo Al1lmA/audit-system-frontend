@@ -15,13 +15,13 @@ const Sidebar: React.FC = () => {
   const { user } = useUser();
   
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['expert', 'participant', 'admin'] },
-    { name: 'Companies', href: '/companies', icon: Building2, roles: ['expert', 'admin'] },
-    { name: 'Users', href: '/users', icon: Users, roles: ['admin'] },
-    { name: 'Audits', href: '/audits', icon: ClipboardCheck, roles: ['expert', 'participant', 'admin'] },
-    { name: 'Analytics', href: '/analytics', icon: BarChart4, roles: ['expert', 'admin'] },
-    { name: 'Reports', href: '/reports', icon: FileText, roles: ['expert', 'participant', 'admin'] },
-  ];
+    { name: 'Главная', href: '/dashboard', icon: LayoutDashboard, roles: ['expert', 'participant', 'admin'] },
+    { name: 'Компании', href: '/companies', icon: Building2, roles: ['expert', 'admin'] },
+    { name: 'Пользователи', href: '/users', icon: Users, roles: ['admin'] },
+    { name: 'Аудиты', href: '/audits', icon: ClipboardCheck, roles: ['expert', 'participant', 'admin'] },
+    { name: 'Аналитика', href: '/analytics', icon: BarChart4, roles: ['expert', 'admin'] },
+    { name: 'Отчёты', href: '/reports', icon: FileText, roles: ['expert', 'participant', 'admin'] },
+];
 
   const filteredNavigation = navigation.filter(item => 
     user && item.roles.includes(user.role)
@@ -34,7 +34,7 @@ const Sidebar: React.FC = () => {
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
               <ShieldCheck className="h-8 w-8 text-white mr-2" />
-              <span className="text-white text-xl font-bold">IT Audit System</span>
+              <span className="text-white text-xl font-bold">Audit System</span>
             </div>
             <nav className="mt-8 flex-1 px-2 space-y-1">
               {filteredNavigation.map((item) => (

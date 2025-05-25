@@ -118,9 +118,9 @@ const Users: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Users</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Пользователи</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage system users and their roles
+            Управляйте пользователями системы и их ролями
           </p>
         </div>
         <button
@@ -128,7 +128,7 @@ const Users: React.FC = () => {
           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add User
+          Добавить пользователя
         </button>
       </div>
 
@@ -141,7 +141,7 @@ const Users: React.FC = () => {
             <input
               type="text"
               className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-              placeholder="Search users..."
+              placeholder="Поиск пользователей..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -152,10 +152,10 @@ const Users: React.FC = () => {
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
             >
-              <option value="all">All Roles</option>
-              <option value="expert">Experts</option>
-              <option value="participant">Participants</option>
-              <option value="admin">Admins</option>
+              <option value="all">Все роли</option>
+              <option value="expert">Эксперты</option>
+              <option value="participant">Участники</option>
+              <option value="admin">Администраторы</option>
             </select>
           </div>
         </div>
@@ -164,7 +164,7 @@ const Users: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         {loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-            Loading...
+            Загрузка...
           </div>
         )}
         {error && (
@@ -181,7 +181,7 @@ const Users: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('username')}
                   >
-                    <span>User</span>
+                    <span>Пользователь</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'username' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -190,24 +190,24 @@ const Users: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('role')}
                   >
-                    <span>Role</span>
+                    <span>Роль</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'role' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Organization
+                  Организация
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('lastLogin')}
                   >
-                    <span>Last Login</span>
+                    <span>Последний вход</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'lastLogin' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
+                  Действия
                 </th>
               </tr>
             </thead>
@@ -265,16 +265,15 @@ const Users: React.FC = () => {
         </div>
         {filteredUsers.length === 0 && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-            No users found matching your search criteria.
+            Пользователи, соответствующие критериям поиска, не найдены.
           </div>
         )}
       </div>
-
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              {editingUser ? 'Edit User' : 'Add New User'}
+              {editingUser ? 'Редактировать пользователя' : 'Добавить пользователя'}
             </h2>
             <UserForm
               initialData={editingUser || undefined}

@@ -5,10 +5,10 @@ import { ClipboardCheck, Plus, Search, Eye, ArrowUpDown, Calendar } from 'lucide
 import { fetchAudits, fetchCompanies } from '../apiService';
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'in progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'planned', label: 'Planned' },
+  { value: 'all', label: 'Все статусы' },
+  { value: 'in progress', label: 'В процессе' },
+  { value: 'completed', label: 'Завершён' },
+  { value: 'planned', label: 'Запланирован' },
 ];
 
 const Audits = () => {
@@ -118,13 +118,13 @@ const Audits = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Audits</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Аудиты</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {companyIdFilter
-              ? 'Audits for the selected company'
+              ? 'Аудиты выбранной компании'
               : user?.role === 'participant'
-              ? `Audits for ${user.organization}`
-              : 'Manage and view all IT audits'}
+              ? `Аудиты для ${user.organization}`
+              : 'Управляйте аудитами и просматривайте информацию'}
           </p>
         </div>
         {canCreateAudit && (
@@ -133,12 +133,12 @@ const Audits = () => {
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           >
             <Plus className="h-4 w-4 mr-2" />
-            New Audit
+            Новый аудит
           </Link>
         )}
       </div>
 
-      {/* Search and filters */}
+      {/* Поиск и фильтры */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
           <div className="relative flex-grow">
@@ -148,7 +148,7 @@ const Audits = () => {
             <input
               type="text"
               className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-              placeholder="Search audits..."
+              placeholder="Поиск аудитов..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -176,7 +176,7 @@ const Audits = () => {
               value={dateRange.from}
               onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
             />
-            <span className="text-gray-500 dark:text-gray-400">to</span>
+            <span className="text-gray-500 dark:text-gray-400">до</span>
             <input
               type="date"
               className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
@@ -187,11 +187,11 @@ const Audits = () => {
         </div>
       </div>
 
-      {/* Audits list */}
+      {/* Список аудитов */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         {loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-            Loading...
+            Загрузка...
           </div>
         )}
         {error && (
@@ -208,7 +208,7 @@ const Audits = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('name')}
                   >
-                    <span>Audit Name</span>
+                    <span>Название аудита</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -217,7 +217,7 @@ const Audits = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('company')}
                   >
-                    <span>Company</span>
+                    <span>Компания</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'company' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -226,7 +226,7 @@ const Audits = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('date')}
                   >
-                    <span>Date</span>
+                    <span>Дата</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'date' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -235,24 +235,24 @@ const Audits = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('status')}
                   >
-                    <span>Status</span>
+                    <span>Статус</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'status' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Completion
+                  Завершено
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <button
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('expert')}
                   >
-                    <span>Expert</span>
+                    <span>Эксперт</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'expert' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
+                  Действия
                 </th>
               </tr>
             </thead>
@@ -266,7 +266,6 @@ const Audits = () => {
                   audit.expert && typeof audit.expert === 'object'
                     ? audit.expert.username
                     : audit.expert;
-
                 return (
                   <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -303,7 +302,11 @@ const Audits = () => {
                         audit.status === 'in progress' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
                         'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                       }`}>
-                        {audit.status && audit.status[0].toUpperCase() + audit.status.slice(1)}
+                        {audit.status === 'completed'
+                          ? 'Завершён'
+                          : audit.status === 'in progress'
+                          ? 'В процессе'
+                          : 'Запланирован'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -337,7 +340,7 @@ const Audits = () => {
         </div>
         {filteredAudits.length === 0 && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-            No audits found matching your search criteria.
+            Аудиты по заданным критериям не найдены.
           </div>
         )}
       </div>

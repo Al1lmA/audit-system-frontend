@@ -124,12 +124,12 @@ const Register: React.FC = () => {
             <ClipboardCheck className="h-16 w-16 text-indigo-600 dark:text-indigo-400" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Create a new account
+            Создайте новый аккаунт
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Or{' '}
+            Или{' '}
             <Link to="/login" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
-              sign in to your existing account
+              войдите в существующий аккаунт
             </Link>
           </p>
         </div>
@@ -137,14 +137,14 @@ const Register: React.FC = () => {
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">
               <label htmlFor="name" className="sr-only">
-                Full Name
+                Полное имя
               </label>
               <input
                 id="name"
                 type="text"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
-                placeholder="Full Name"
-                {...register('name', { required: 'Name is required' })}
+                placeholder="Полное имя"
+                {...register('name', { required: 'Имя обязательно' })}
               />
               {errors.name && (
                 <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.name.message}</p>
@@ -152,19 +152,19 @@ const Register: React.FC = () => {
             </div>
             <div className="mb-4">
               <label htmlFor="email" className="sr-only">
-                Email address
+                Электронная почта
               </label>
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Электронная почта"
                 {...register('email', {
-                  required: 'Email is required',
+                  required: 'Электронная почта обязательна',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
+                    message: 'Некорректный адрес электронной почты'
                   }
                 })}
               />
@@ -174,18 +174,18 @@ const Register: React.FC = () => {
             </div>
             <div className="mb-4">
               <label htmlFor="password" className="sr-only">
-                Password
+                Пароль
               </label>
               <input
                 id="password"
                 type="password"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
-                placeholder="Password"
+                placeholder="Пароль"
                 {...register('password', {
-                  required: 'Password is required',
+                  required: 'Пароль обязателен',
                   minLength: {
                     value: 6,
-                    message: 'Password must be at least 6 characters'
+                    message: 'Пароль должен содержать не менее 6 символов'
                   }
                 })}
               />
@@ -195,16 +195,16 @@ const Register: React.FC = () => {
             </div>
             <div className="mb-4">
               <label htmlFor="confirmPassword" className="sr-only">
-                Confirm Password
+                Подтвердите пароль
               </label>
               <input
                 id="confirmPassword"
                 type="password"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 sm:text-sm"
-                placeholder="Confirm Password"
+                placeholder="Подтвердите пароль"
                 {...register('confirmPassword', {
-                  required: 'Please confirm your password',
-                  validate: value => value === password || 'Passwords do not match'
+                  required: 'Пожалуйста, подтвердите пароль',
+                  validate: value => value === password || 'Пароли не совпадают'
                 })}
               />
               {errors.confirmPassword && (
@@ -213,7 +213,7 @@ const Register: React.FC = () => {
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Role
+                Роль
               </label>
               <div className="flex space-x-4">
                 <div className="flex items-center">
@@ -222,10 +222,10 @@ const Register: React.FC = () => {
                     type="radio"
                     value="expert"
                     className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600"
-                    {...register('role', { required: 'Please select a role' })}
+                    {...register('role', { required: 'Пожалуйста, выберите роль' })}
                   />
                   <label htmlFor="expert" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Expert
+                    Эксперт
                   </label>
                 </div>
                 <div className="flex items-center">
@@ -234,10 +234,10 @@ const Register: React.FC = () => {
                     type="radio"
                     value="participant"
                     className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600"
-                    {...register('role', { required: 'Please select a role' })}
+                    {...register('role', { required: 'Пожалуйста, выберите роль' })}
                   />
                   <label htmlFor="participant" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Participant
+                    Участник
                   </label>
                 </div>
               </div>
@@ -248,7 +248,7 @@ const Register: React.FC = () => {
             {role === 'participant' && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Organization
+                  Организация
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -257,7 +257,7 @@ const Register: React.FC = () => {
                   <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Search organization..."
+                    placeholder="Поиск организации..."
                     value={searchTerm}
                     onChange={(e) => {
                       setSearchTerm(e.target.value);
@@ -272,7 +272,7 @@ const Register: React.FC = () => {
                     >
                       {loadingCompanies ? (
                         <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                          Loading companies...
+                          Загрузка организаций...
                         </div>
                       ) : companiesError ? (
                         <div className="px-4 py-2 text-sm text-red-600 dark:text-red-400">
@@ -296,7 +296,7 @@ const Register: React.FC = () => {
                           ))}
                           {filteredCompanies.length === 0 && (
                             <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                              No organizations found
+                              Организации не найдены
                             </div>
                           )}
                         </>
@@ -318,7 +318,7 @@ const Register: React.FC = () => {
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Register
+              Зарегистрироваться
             </button>
           </div>
         </form>

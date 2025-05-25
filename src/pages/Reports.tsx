@@ -42,21 +42,21 @@ const Reports: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Reports</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Отчёты</h1>
         </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Reports</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Последние отчёты</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Previously generated reports
+            Ранее сгенерированные отчёты
           </p>
         </div>
         
         <div className="p-6">
           <div className="text-center text-gray-500 dark:text-gray-400">
-            No reports generated yet. Generate reports from the Analytics page.
+            Отчёты ещё не были сгенерированы. Сгенерируйте отчёты на странице аналитики.
           </div>
         </div>
       </div>

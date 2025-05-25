@@ -129,9 +129,9 @@ const Companies: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Companies</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Компании</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage companies for IT audits
+            Управление компаниями
           </p>
         </div>
         {isAdmin && (
@@ -140,12 +140,12 @@ const Companies: React.FC = () => {
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Company
+            Добавить компанию
           </button>
         )}
       </div>
 
-      {/* Search and filters */}
+      {/* Поиск и фильтры */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex items-center">
           <div className="relative flex-grow">
@@ -155,7 +155,7 @@ const Companies: React.FC = () => {
             <input
               type="text"
               className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-              placeholder="Search companies..."
+              placeholder="Поиск компаний..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -163,7 +163,7 @@ const Companies: React.FC = () => {
         </div>
       </div>
 
-      {/* Companies list */}
+      {/* Список компаний */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -174,7 +174,7 @@ const Companies: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('name')}
                   >
-                    <span>Company</span>
+                    <span>Компания</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'name' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -183,7 +183,7 @@ const Companies: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('industry')}
                   >
-                    <span>Industry</span>
+                    <span>Отрасль</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'industry' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -192,7 +192,7 @@ const Companies: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('size')}
                   >
-                    <span>Size</span>
+                    <span>Размер</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'size' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -201,7 +201,7 @@ const Companies: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('location')}
                   >
-                    <span>Location</span>
+                    <span>Локация</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'location' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
@@ -210,13 +210,13 @@ const Companies: React.FC = () => {
                     className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort('lastAudit')}
                   >
-                    <span>Last Audit</span>
+                    <span>Последний аудит</span>
                     <ArrowUpDown className={`h-4 w-4 ${sortField === 'lastAudit' ? 'text-indigo-500' : ''}`} />
                   </button>
                 </th>
                 {isAdmin && (
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
+                    Действия
                   </th>
                 )}
               </tr>
@@ -251,7 +251,7 @@ const Companies: React.FC = () => {
                     {company.location}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {company.lastAudit ? company.lastAudit : 'No audits yet'}
+                    {company.lastAudit ? company.lastAudit : 'Аудитов ещё не было'}
                   </td>
                   {isAdmin && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -278,17 +278,16 @@ const Companies: React.FC = () => {
         </div>
         {sortedAndFilteredCompanies.length === 0 && !loading && (
           <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-            No companies found matching your search criteria.
+            Компании, соответствующие критериям поиска, не найдены.
           </div>
         )}
       </div>
-
       {/* Модальное окно для добавления/редактирования компании */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              {editingCompany ? 'Edit Company' : 'Add New Company'}
+              {editingCompany ? 'Редактировать компанию' : 'Добавить новую компанию'}
             </h2>
             <CompanyForm
               onSubmit={handleSubmit}

@@ -48,10 +48,10 @@ const UserDetails: React.FC = () => {
             </div>
             <div className="ml-4">
               <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                User Information
+                Информация о пользователе
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                Personal details and account information.
+                Личные данные и информация об аккаунте.
               </p>
             </div>
           </div>
@@ -59,11 +59,11 @@ const UserDetails: React.FC = () => {
         <div className="border-t border-gray-200 dark:border-gray-700">
           <dl>
             <div className="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Full name</dt>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Полное имя</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">{user.username}</dd>
             </div>
             <div className="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email address</dt>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Электронная почта</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 flex items-center">
                 <Mail className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                 <a href={`mailto:${user.email}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
@@ -72,12 +72,12 @@ const UserDetails: React.FC = () => {
               </dd>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</dt>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Роль</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 capitalize">{user.role}</dd>
             </div>
             {user.organization && (
               <div className="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</dt>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Организация</dt>
                 <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 flex items-center">
                   <Building2 className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                   {user.organization}
@@ -85,14 +85,14 @@ const UserDetails: React.FC = () => {
               </div>
             )}
             <div className="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Last login</dt>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Последний вход</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 flex items-center">
                 <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                 {user.last_login ? user.last_login : '-'}
               </dd>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Account created</dt>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Аккаунт создан</dt>
               <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 flex items-center">
                 <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                 {user.date_joined}

@@ -63,13 +63,13 @@ const UserForm: React.FC<UserFormProps> = ({
         <div className="grid grid-cols-1 gap-6">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Full Name
+              Полное имя
             </label>
             <input
               type="text"
               id="username"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              {...register('username', { required: 'Full name is required' })}
+              {...register('username', { required: 'Полное имя обязательно' })}
             />
             {errors.username && (
               <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
@@ -85,10 +85,10 @@ const UserForm: React.FC<UserFormProps> = ({
               id="email"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               {...register('email', {
-                required: 'Email is required',
+                required: 'Email обязателен',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
+                  message: 'Некорректный email',
                 },
               })}
             />
@@ -99,17 +99,17 @@ const UserForm: React.FC<UserFormProps> = ({
 
           <div>
             <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Role
+              Роль
             </label>
             <select
               id="role"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              {...register('role', { required: 'Role is required' })}
+              {...register('role', { required: 'Роль обязательна' })}
             >
-              <option value="">Select role</option>
-              <option value="expert">Expert</option>
-              <option value="participant">Participant</option>
-              <option value="admin">Admin</option>
+              <option value="">Выберите роль</option>
+              <option value="expert">Эксперт</option>
+              <option value="participant">Участник</option>
+              <option value="admin">Администратор</option>
             </select>
             {errors.role && (
               <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
@@ -119,10 +119,10 @@ const UserForm: React.FC<UserFormProps> = ({
           {role === 'participant' && (
             <div>
               <label htmlFor="organization" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Organization
+                Организация
               </label>
               {loadingCompanies ? (
-                <div className="text-sm text-gray-500">Loading companies...</div>
+                <div className="text-sm text-gray-500">Загрузка компаний...</div>
               ) : companiesError ? (
                 <div className="text-sm text-red-600">{companiesError}</div>
               ) : (
@@ -130,10 +130,10 @@ const UserForm: React.FC<UserFormProps> = ({
                   id="organization"
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   {...register('organization', {
-                    required: role === 'participant' ? 'Organization is required for participants' : false,
+                    required: role === 'participant' ? 'Для участников обязательна организация' : false,
                   })}
                 >
-                  <option value="">Select organization</option>
+                  <option value="">Выберите организацию</option>
                   {companies.map((company) => (
                     <option key={company.id} value={company.id}>
                       {company.name}
@@ -151,17 +151,17 @@ const UserForm: React.FC<UserFormProps> = ({
             <>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
+                  Пароль
                 </label>
                 <input
                   type="password"
                   id="password"
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   {...register('password', {
-                    required: !isEdit ? 'Password is required' : false,
+                    required: !isEdit ? 'Пароль обязателен' : false,
                     minLength: {
                       value: 6,
-                      message: 'Password must be at least 6 characters',
+                      message: 'Пароль должен быть не менее 6 символов',
                     },
                   })}
                 />
@@ -172,16 +172,16 @@ const UserForm: React.FC<UserFormProps> = ({
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Confirm Password
+                  Подтвердите пароль
                 </label>
                 <input
                   type="password"
                   id="confirmPassword"
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   {...register('confirmPassword', {
-                    required: !isEdit ? 'Please confirm your password' : false,
+                    required: !isEdit ? 'Пожалуйста, подтвердите пароль' : false,
                     validate: (value) =>
-                      !value || !password || value === password || 'Passwords do not match',
+                      !value || !password || value === password || 'Пароли не совпадают',
                   })}
                 />
                 {errors.confirmPassword && (
@@ -199,13 +199,13 @@ const UserForm: React.FC<UserFormProps> = ({
           onClick={onCancel}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
-          Cancel
+          Отмена
         </button>
         <button
           type="submit"
           className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
         >
-          {isEdit ? 'Update User' : 'Add User'}
+          {isEdit ? 'Обновить пользователя' : 'Добавить пользователя'}
         </button>
       </div>
     </form>
